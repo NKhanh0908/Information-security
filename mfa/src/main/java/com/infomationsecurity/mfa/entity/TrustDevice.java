@@ -21,8 +21,8 @@ public class TrustDevice {
     private Integer deviceId;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "account_id", nullable = false)
+    private Account account;
 
     @Column(name = "device_name", nullable = false, length = 100)
     private String deviceName;

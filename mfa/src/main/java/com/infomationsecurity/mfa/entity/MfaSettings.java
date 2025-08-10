@@ -23,8 +23,9 @@ public class MfaSettings {
     @Column(name = "mfa_id")
     private Integer mfaId;
 
-    @Column(name = "user_id", nullable = false)
-    private Integer userId;
+    @ManyToOne
+    @JoinColumn(name = "account_id", nullable = false)
+    private Account account;
 
     @Column(name = "mfa_enabled")
     private Boolean mfaEnabled = false;
