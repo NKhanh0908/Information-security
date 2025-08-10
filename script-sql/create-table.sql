@@ -63,3 +63,22 @@ CREATE TABLE "mfa_settings"(
     "mfa_created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT "MFA settings creation timestamp",
     "mfa_updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "MFA settings update timestamp"
 )
+
+-- Add foreign key constraints
+ALTER TABLE account ADD CONSTRAINT fk_account_user 
+    FOREIGN KEY (user_id) REFERENCES users(user_id);
+
+ALTER TABLE login_attempt ADD CONSTRAINT fk_login_account 
+    FOREIGN KEY (account_id) REFERENCES account(account_id);
+
+ALTER TABLE trust_device ADD CONSTRAINT fk_device_user 
+    FOREIGN KEY (user_id) REFERENCES users(user_id);
+
+ALTER TABLE mfa_settings ADD CONSTRAINT fk_mfa_user 
+    FOREIGN KEY (user_id) REFERENCES users(user_id);
+
+-- Add indexes
+CREATE INDEX idx_account_username ON account(account_username);
+CREATE INDEX idx_account_email ON account(account_email);
+CREATE INDEX idx_login_attempt_ip ON login_attempt(attempt_ip_address);
+CREATE INDEX idx_login_attempt_time ON login_attempt(attempt_created_at);
