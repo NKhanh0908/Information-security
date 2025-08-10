@@ -39,7 +39,7 @@ CREATE TABLE `login_attempt`(
 
 CREATE TABLE `trust_device` (
     `device_id` INT PRIMARY KEY AUTO_INCREMENT COMMENT "Device ID",
-    `user_id` INT NOT NULL COMMENT "User ID",
+    `account_id` INT NOT NULL COMMENT "Account ID",
     `device_name` VARCHAR(100) NOT NULL COMMENT "Name of the device",
     `device_ip_address` VARCHAR(45) NOT NULL COMMENT "IP address of the device",
     `device_location` VARCHAR(255) NOT NULL COMMENT "Location of the device",
@@ -51,7 +51,7 @@ CREATE TABLE `trust_device` (
 
 CREATE TABLE `mfa_settings`(
     `mfa_id` INT PRIMARY KEY AUTO_INCREMENT COMMENT "MFA ID",
-    `user_id` INT NOT NULL COMMENT "User ID",
+    `account_id` INT NOT NULL COMMENT "Account ID",
     `mfa_enabled` BOOLEAN DEFAULT FALSE COMMENT "Is MFA enabled?",
     `mfa_primary_method` ENUM('TOTP', 'EMAIL', 'WEBAUTHN', 'AUTHENTICATOR_APP', 'BACKUP_CODES') NOT NULL COMMENT "Primary MFA method",
     `mfa_backup_method` ENUM('TOTP', 'EMAIL', 'WEBAUTHN', 'AUTHENTICATOR_APP', 'BACKUP_CODES') COMMENT "Backup MFA method",
@@ -73,11 +73,11 @@ ALTER TABLE account ADD CONSTRAINT fk_account_user
 ALTER TABLE login_attempt ADD CONSTRAINT fk_login_account 
     FOREIGN KEY (account_id) REFERENCES account(account_id);
 
-ALTER TABLE trust_device ADD CONSTRAINT fk_device_user 
-    FOREIGN KEY (user_id) REFERENCES users(user_id);
+ALTER TABLE trust_device ADD CONSTRAINT fk_device_account 
+    FOREIGN KEY (account_id) REFERENCES account(account_id);
 
-ALTER TABLE mfa_settings ADD CONSTRAINT fk_mfa_user 
-    FOREIGN KEY (user_id) REFERENCES users(user_id);
+ALTER TABLE mfa_settings ADD CONSTRAINT fk_mfa_account 
+    FOREIGN KEY (account_id) REFERENCES account(account_id);
 
 -- Add indexes
 CREATE INDEX idx_account_username ON account(account_username);
