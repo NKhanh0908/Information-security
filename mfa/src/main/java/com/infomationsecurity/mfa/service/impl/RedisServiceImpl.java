@@ -1,6 +1,6 @@
 package com.infomationsecurity.mfa.service.impl;
 
-import com.project.hrm.common.service.RedisService;
+import com.infomationsecurity.mfa.service.RedisService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
