@@ -10,4 +10,13 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 public class TrustDeviceDTO {
+    private Integer trustDeviceId;
+    private Integer accountId;
+    private String trustDeviceName;
+    private String deviceIpAddress;
+    private String deviceLocation;
+    private String deviceUserAgent;
+    private Boolean deviceIsActive;
+    private String deviceCreatedAt;
+    private String deviceUpdatedAt;
 }
