@@ -25,8 +25,9 @@ public class LoginAttempt {
     @JoinColumn(name = "account_id", nullable = false)
     private Account account;
 
-    @Column(name = "attempt_ip_address", nullable = false, length = 45)
-    private String attemptIpAddress;
+    @ManyToOne
+    @JoinColumn(name = "trust_device_id")
+    private TrustDevice trustDevice;
 
     @Column(name = "attempt_success", nullable = false)
     private Boolean attemptSuccess;

@@ -35,9 +35,6 @@ public class TrustDevice {
     @Column(name = "device_location", nullable = false)
     private String deviceLocation;
 
-    @Column(name = "device_user_agent", nullable = false)
-    private String deviceUserAgent;
-
     @Column(name = "device_is_active")
     private Boolean deviceIsActive = true;
 

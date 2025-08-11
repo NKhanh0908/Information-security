@@ -5,14 +5,18 @@ import com.infomationsecurity.mfa.dto.request.accountDTO.FormLoginDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AuthenticationDTO;
 import com.infomationsecurity.mfa.entity.Account;
+import com.infomationsecurity.mfa.entity.LoginAttempt;
+import com.infomationsecurity.mfa.entity.MfaSettings;
 import com.infomationsecurity.mfa.entity.User;
 import com.infomationsecurity.mfa.exception.CustomException;
 import com.infomationsecurity.mfa.mapper.AccountMapper;
 import com.infomationsecurity.mfa.repository.AccountRepository;
 import com.infomationsecurity.mfa.service.AccountService;
+import com.infomationsecurity.mfa.service.LoginAttemptService;
+import com.infomationsecurity.mfa.service.MfaSettingsService;
 import com.infomationsecurity.mfa.service.UserService;
 import com.infomationsecurity.mfa.util.JwtTokenUtil;
-import com.infomationsecurity.mfa.util.LoginAttemptService;
+import com.infomationsecurity.mfa.util.LoginAttemptChecked;
 import com.infomationsecurity.mfa.util.OtpService;
 import com.infomationsecurity.mfa.exception.Error;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +42,9 @@ public class AccountServiceImpl implements AccountService {
     private final AccountMapper accountMapper;
 
     private final UserService userService;
+    private final MfaSettingsService mfaSettingsService;
     private final LoginAttemptService loginAttemptService;
+    private final LoginAttemptChecked loginAttemptChecked;
     private final OtpService otpService;
     //private final MailService mailService;
 
@@ -72,16 +78,16 @@ public class AccountServiceImpl implements AccountService {
                     : "unknown";
             String key = name + ":" + ip;
 
-            if (loginAttemptService.isBlocked(key)) {
+            if (loginAttemptChecked.isBlocked(key)) {
                 throw new CustomException(Error.ACCOUNT_LOCKED_TEMPORARILY);
             }
 
             log.info("Account: {}", account);
 
             if (!passwordEncoder.matches(formLoginDTO.getPassword(), account.getPassword())) {
-                loginAttemptService.loginFailed(key);
+                loginAttemptChecked.loginFailed(key);
 
-                int remaining = loginAttemptService.getRemainingAttempts(key);
+                int remaining = loginAttemptChecked.getRemainingAttempts(key);
                 log.warn("Login attempt failed for user: {}, remaining attempts: {}", name, remaining);
                 if (remaining <= 0) {
                     throw new CustomException(Error.ACCOUNT_LOCKED_TEMPORARILY);
@@ -90,7 +96,10 @@ public class AccountServiceImpl implements AccountService {
                 }
             }
 
-            loginAttemptService.loginSucceeded(name);
+            loginAttemptChecked.loginSucceeded(name);
+
+            LoginAttempt loginAttempt = new LoginAttempt();
+
 
             try {
                 String jwtToken = jwtTokenUtil.generateToken((UserDetails) account);
@@ -139,8 +148,13 @@ public class AccountServiceImpl implements AccountService {
         Account account = accountMapper.createDTOToEntity(accountCreateDTO);
         account.setAccountPassword(passwordEncoder.encode(accountCreateDTO.getPassword()));
         account.setUser(userSaved);
+        Account accountSaved = accountRepository.save(account);
 
-        return accountMapper.entityToDTO(accountRepository.save(account));
+        MfaSettings mfaSettings = new MfaSettings();
+        mfaSettings.setAccount(accountSaved);
+        mfaSettingsService.create(mfaSettings);
+
+        return accountMapper.entityToDTO(accountSaved);
     }
 
     /**

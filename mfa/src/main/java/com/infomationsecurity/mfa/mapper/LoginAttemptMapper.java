@@ -10,7 +10,6 @@ public class LoginAttemptMapper {
         return LoginAttemptDTO.builder()
                 .attemptId(loginAttempt.getAttemptId())
                 .accountId(loginAttempt.getAccount().getAccountId())
-                .attemptIpAddress(loginAttempt.getAttemptIpAddress())
                 .attemptSuccess(loginAttempt.getAttemptSuccess())
                 .attemptUserAgent(loginAttempt.getAttemptUserAgent())
                 .attemptFailureReason(loginAttempt.getAttemptFailureReason() != null ? loginAttempt.getAttemptFailureReason() : null)

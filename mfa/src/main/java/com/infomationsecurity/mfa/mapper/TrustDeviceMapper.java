@@ -13,7 +13,6 @@ public class TrustDeviceMapper {
                 .trustDeviceName(trustDevice.getDeviceName())
                 .deviceIpAddress(trustDevice.getDeviceIpAddress())
                 .deviceLocation(trustDevice.getDeviceLocation())
-                .deviceUserAgent(trustDevice.getDeviceUserAgent())
                 .deviceIsActive(trustDevice.getDeviceIsActive())
                 .deviceCreatedAt(trustDevice.getDeviceCreatedAt())
                 .deviceUpdatedAt(trustDevice.getDeviceUpdatedAt() != null ? trustDevice.getDeviceUpdatedAt() : trustDevice.getDeviceCreatedAt())
