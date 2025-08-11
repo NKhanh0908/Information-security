@@ -12,6 +12,7 @@ public class AccountMapper {
                 .accountUsername(accountCreateDTO.getUsername())
                 .accountPassword(accountCreateDTO.getPassword())
                 .accountEmail(accountCreateDTO.getEmail())
+                .accountIsLocked(false)
                 .build();
     }
 
@@ -20,7 +21,6 @@ public class AccountMapper {
                 .accountId(account.getAccountId())
                 .userId(account.getUser().getUserId())
                 .accountUsername(account.getAccountUsername())
-                .accountPassword(account.getAccountPassword())
                 .accountEmail(account.getAccountEmail())
                 .accountIsLocked(account.getAccountIsLocked())
                 .accountLockedTime(account.getAccountLockedTime() != null ? account.getAccountLockedTime() : null)
