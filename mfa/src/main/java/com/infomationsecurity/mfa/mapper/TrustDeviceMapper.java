@@ -1,6 +1,7 @@
 package com.infomationsecurity.mfa.mapper;
 
 import com.infomationsecurity.mfa.dto.response.TrustDeviceDTO;
+import com.infomationsecurity.mfa.entity.Account;
 import com.infomationsecurity.mfa.entity.TrustDevice;
 import org.springframework.stereotype.Component;
 
@@ -18,4 +19,15 @@ public class TrustDeviceMapper {
                 .deviceUpdatedAt(trustDevice.getDeviceUpdatedAt() != null ? trustDevice.getDeviceUpdatedAt() : trustDevice.getDeviceCreatedAt())
                 .build();
     }
+
+    public TrustDevice createTrustDevice(String ip, String deviceName, String location) {
+        return TrustDevice.builder()
+                .deviceName(deviceName)
+                .deviceIpAddress(ip)
+                .deviceLocation(location)
+                .deviceIsActive(true)
+                .build();
+    }
+
+
 }

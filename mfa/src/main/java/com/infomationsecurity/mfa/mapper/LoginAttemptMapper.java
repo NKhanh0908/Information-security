@@ -16,4 +16,19 @@ public class LoginAttemptMapper {
                 .attemptCreatedAt(loginAttempt.getAttemptCreatedAt() != null ? loginAttempt.getAttemptCreatedAt().toString() : null)
                 .build();
     }
+
+    public LoginAttempt createSuccessfulLoginAttempt(String userAgent) {
+        return LoginAttempt.builder()
+                .attemptSuccess(true)
+                .attemptUserAgent(userAgent)
+                .attemptFailureReason(null)
+                .build();
+    }
+    public LoginAttempt createFailedLoginAttempt(String userAgent, String failureReason) {
+        return LoginAttempt.builder()
+                .attemptSuccess(false)
+                .attemptUserAgent(userAgent)
+                .attemptFailureReason(failureReason)
+                .build();
+    }
 }

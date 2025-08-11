@@ -24,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.time.LocalDateTime;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -59,21 +61,25 @@ public class AccountServiceImpl implements AccountService {
      * @throws RuntimeException if the username does not exist, the password is invalid,
      *                          or token generation fails
      */
-    @Transactional(readOnly = true)
+    @Transactional
     @Override
     public AuthenticationDTO signIn(FormLoginDTO formLoginDTO) {
         try {
+            log.info("Attempting to sign in user: {}", formLoginDTO.getUsername());
             String name = formLoginDTO.getUsername().trim().toLowerCase();
 
             Account account = accountRepository.findByAccountUsername(name)
                     .orElseThrow(() -> new CustomException(Error.ACCOUNT_NOT_FOUND));
 
-            String ip = RequestContextHolder.getRequestAttributes() instanceof ServletRequestAttributes
-                    ? ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest().getRemoteAddr()
-                    : "unknown";
+            ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            String ip = requestAttributes != null ? requestAttributes.getRequest().getRemoteAddr() : "unknown";
+            String userAgent = requestAttributes != null ? requestAttributes.getRequest().getHeader("User-Agent") : "unknown";
+
             String key = name + ":" + ip;
 
             if (loginAttemptChecked.isBlocked(key)) {
+                log.warn("Account is temporarily locked due to too many failed login attempts: {}", name);
+                // saveFailedLoginAttempt(account, null, userAgent, "Account temporarily locked due to multiple failed attempts");
                 throw new CustomException(Error.ACCOUNT_LOCKED_TEMPORARILY);
             }
 
@@ -84,6 +90,10 @@ public class AccountServiceImpl implements AccountService {
 
                 int remaining = loginAttemptChecked.getRemainingAttempts(key);
                 log.warn("Login attempt failed for user: {}, remaining attempts: {}", name, remaining);
+
+//                String failureReason = remaining <= 0 ? "Account locked due to multiple failed attempts" : "Invalid password";
+//                saveFailedLoginAttempt(account, null, userAgent, failureReason);
+
                 if (remaining <= 0) {
                     throw new CustomException(Error.ACCOUNT_LOCKED_TEMPORARILY);
                 } else {
@@ -93,14 +103,12 @@ public class AccountServiceImpl implements AccountService {
 
             loginAttemptChecked.loginSucceeded(name);
 
-            TrustDevice trustDevice = new TrustDevice();
-            trustDevice.setAccount(account);
-            trustDeviceService.create(trustDevice);
+            account.setAccountLastLogin(LocalDateTime.now());
+            accountRepository.save(account);
 
-            LoginAttempt loginAttempt = new LoginAttempt();
-            loginAttempt.setAccount(account);
-            loginAttempt.setTrustDevice(trustDevice);
-            loginAttemptService.create(loginAttempt);
+            TrustDevice trustDevice = trustDeviceService.create(account, ip, userAgent);
+
+            loginAttemptService.create(account, trustDevice, userAgent);
 
             try {
                 String jwtToken = jwtTokenUtil.generateToken((UserDetails) account);

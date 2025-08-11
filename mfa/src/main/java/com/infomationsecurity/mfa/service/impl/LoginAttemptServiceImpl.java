@@ -1,7 +1,9 @@
 package com.infomationsecurity.mfa.service.impl;
 
 import com.infomationsecurity.mfa.dto.response.LoginAttemptDTO;
+import com.infomationsecurity.mfa.entity.Account;
 import com.infomationsecurity.mfa.entity.LoginAttempt;
+import com.infomationsecurity.mfa.entity.TrustDevice;
 import com.infomationsecurity.mfa.mapper.LoginAttemptMapper;
 import com.infomationsecurity.mfa.repository.LoginAttemptRepository;
 import com.infomationsecurity.mfa.service.LoginAttemptService;
@@ -18,8 +20,12 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
     private final LoginAttemptMapper loginAttemptMapper;
 
     @Override
-    public LoginAttempt create(LoginAttempt loginAttempt) {
-        log.info("Creating login attempt for account ID: {}", loginAttempt.getAccount().getAccountId());
+    public LoginAttempt create(Account account, TrustDevice trustDevice, String userAgent) {
+        log.info("Creating login attempt for account ID: {}", account.getAccountId());
+
+        LoginAttempt loginAttempt = loginAttemptMapper.createSuccessfulLoginAttempt(userAgent);
+        loginAttempt.setAccount(account);
+        loginAttempt.setTrustDevice(trustDevice);
 
         return loginAttemptRepository.save(loginAttempt);
     }
