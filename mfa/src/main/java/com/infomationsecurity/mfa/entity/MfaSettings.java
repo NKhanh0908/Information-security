@@ -23,7 +23,7 @@ public class MfaSettings {
     @Column(name = "mfa_id")
     private Integer mfaId;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "account_id", nullable = false)
     private Account account;
 
