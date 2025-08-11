@@ -1,6 +1,6 @@
 package com.infomationsecurity.mfa.config;
 
-import com.infomationsecurity.mfa.util.LoginAttemptService;
+import com.infomationsecurity.mfa.util.LoginAttemptChecked;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -17,13 +17,13 @@ import javax.security.auth.login.AccountLockedException;
 @Component
 public class BruteForceAuthenticationProvider implements AuthenticationProvider {
     private final AuthenticationProvider delegate;
-    private final LoginAttemptService loginAttemptService;
+    private final LoginAttemptChecked loginAttemptChecked;
 
     public BruteForceAuthenticationProvider(
             @Qualifier("daoAuthenticationProvider") AuthenticationProvider delegate,
-            LoginAttemptService loginAttemptService) {
+            LoginAttemptChecked loginAttemptChecked) {
         this.delegate = delegate;
-        this.loginAttemptService = loginAttemptService;
+        this.loginAttemptChecked = loginAttemptChecked;
     }
 
     @Override
@@ -34,7 +34,7 @@ public class BruteForceAuthenticationProvider implements AuthenticationProvider 
         String clientIP = getClientIP();
         String key = username + ":" + clientIP;
 
-        if (loginAttemptService.isBlocked(key)) {
+        if (loginAttemptChecked.isBlocked(key)) {
             try {
                 throw new AccountLockedException(
                         "Account temporarily locked due to too many failed attempts");
@@ -45,12 +45,12 @@ public class BruteForceAuthenticationProvider implements AuthenticationProvider 
 
         try {
             Authentication result = delegate.authenticate(authentication);
-            loginAttemptService.loginSucceeded(key);
+            loginAttemptChecked.loginSucceeded(key);
             return result;
         } catch (AuthenticationException e) {
-            loginAttemptService.loginFailed(key);
+            loginAttemptChecked.loginFailed(key);
 
-            int remaining = loginAttemptService.getRemainingAttempts(key);
+            int remaining = loginAttemptChecked.getRemainingAttempts(key);
             if (remaining > 0) {
                 throw new BadCredentialsException(
                         String.format("Invalid credentials. %d attempts remaining", remaining));

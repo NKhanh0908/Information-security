@@ -10,14 +10,14 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 @Slf4j
-public class LoginAttemptService {
+public class LoginAttemptChecked {
 
     private final int MAX_ATTEMPTS = 5;
     private final int LOCKOUT_DURATION_MINUTES = 10;
 
     private final LoadingCache<String, Integer> attemptsCache;
 
-    public LoginAttemptService() {
+    public LoginAttemptChecked() {
         this.attemptsCache = CacheBuilder.newBuilder()
                 .expireAfterWrite(LOCKOUT_DURATION_MINUTES, TimeUnit.MINUTES)
                 .build(new CacheLoader<String, Integer>() {
