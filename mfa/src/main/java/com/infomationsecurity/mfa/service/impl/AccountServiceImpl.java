@@ -5,10 +5,12 @@ import com.infomationsecurity.mfa.dto.request.accountDTO.FormLoginDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AuthenticationDTO;
 import com.infomationsecurity.mfa.entity.Account;
+import com.infomationsecurity.mfa.entity.User;
 import com.infomationsecurity.mfa.exception.CustomException;
 import com.infomationsecurity.mfa.mapper.AccountMapper;
 import com.infomationsecurity.mfa.repository.AccountRepository;
 import com.infomationsecurity.mfa.service.AccountService;
+import com.infomationsecurity.mfa.service.UserService;
 import com.infomationsecurity.mfa.util.JwtTokenUtil;
 import com.infomationsecurity.mfa.util.LoginAttemptService;
 import com.infomationsecurity.mfa.util.OtpService;
@@ -35,6 +37,7 @@ public class AccountServiceImpl implements AccountService {
 
     private final AccountMapper accountMapper;
 
+    private final UserService userService;
     private final LoginAttemptService loginAttemptService;
     private final OtpService otpService;
     //private final MailService mailService;
@@ -128,18 +131,25 @@ public class AccountServiceImpl implements AccountService {
             throw new CustomException(Error.ACCOUNT_ALREADY_EXISTS);
         }
 
-        Account account = accountMapper.createDTOToEntity(accountCreateDTO);
+        User user = new User();
+        user.setUserName(accountCreateDTO.getUsername());
+        user.setUserGender(accountCreateDTO.getGender());
+        User userSaved = userService.create(user);
 
-        return accountMapper.toDTO(accountRepository.save(account));
+        Account account = accountMapper.createDTOToEntity(accountCreateDTO);
+        account.setAccountPassword(passwordEncoder.encode(accountCreateDTO.getPassword()));
+        account.setUser(userSaved);
+
+        return accountMapper.entityToDTO(accountRepository.save(account));
     }
 
     /**
-     *  Retrieves the currently authenticated user's account information.
+     * Retrieves the currently authenticated user's account information.
      *
      * @return the {@link Account} of the currently authenticated user
      */
     @Override
-    public Account getAccountAuth() {
+    public AccountDTO getAccountAuth() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new CustomException(Error.UNAUTHORIZED);
