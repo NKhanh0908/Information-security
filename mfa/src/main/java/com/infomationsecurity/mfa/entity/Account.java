@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -47,9 +50,13 @@ public class Account implements UserDetails {
     private LocalDateTime accountLastLogin;
 
     @Column(name = "account_created_at")
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime accountCreatedAt;
 
     @Column(name = "account_updated_at")
+    @UpdateTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime accountUpdatedAt;
 
     @Override
