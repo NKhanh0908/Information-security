@@ -88,6 +88,7 @@ public class WebSecurityConfiguration {
     }
 
     @Bean
+    @Qualifier("daoAuthenticationProvider")
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setUserDetailsService(ourUserDetailsService);
