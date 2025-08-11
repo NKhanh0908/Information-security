@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface TrustDeviceService {
-    TrustDeviceDTO create(TrustDevice trustDevice);
+    TrustDevice create(TrustDevice trustDevice);
 
     TrustDeviceDTO update(TrustDevice trustDevice);
 

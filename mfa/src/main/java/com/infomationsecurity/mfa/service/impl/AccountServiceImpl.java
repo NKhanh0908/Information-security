@@ -4,17 +4,11 @@ import com.infomationsecurity.mfa.dto.request.accountDTO.AccountCreateDTO;
 import com.infomationsecurity.mfa.dto.request.accountDTO.FormLoginDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AuthenticationDTO;
-import com.infomationsecurity.mfa.entity.Account;
-import com.infomationsecurity.mfa.entity.LoginAttempt;
-import com.infomationsecurity.mfa.entity.MfaSettings;
-import com.infomationsecurity.mfa.entity.User;
+import com.infomationsecurity.mfa.entity.*;
 import com.infomationsecurity.mfa.exception.CustomException;
 import com.infomationsecurity.mfa.mapper.AccountMapper;
 import com.infomationsecurity.mfa.repository.AccountRepository;
-import com.infomationsecurity.mfa.service.AccountService;
-import com.infomationsecurity.mfa.service.LoginAttemptService;
-import com.infomationsecurity.mfa.service.MfaSettingsService;
-import com.infomationsecurity.mfa.service.UserService;
+import com.infomationsecurity.mfa.service.*;
 import com.infomationsecurity.mfa.util.JwtTokenUtil;
 import com.infomationsecurity.mfa.util.LoginAttemptChecked;
 import com.infomationsecurity.mfa.util.OtpService;
@@ -44,6 +38,7 @@ public class AccountServiceImpl implements AccountService {
     private final UserService userService;
     private final MfaSettingsService mfaSettingsService;
     private final LoginAttemptService loginAttemptService;
+    private final TrustDeviceService trustDeviceService;
     private final LoginAttemptChecked loginAttemptChecked;
     private final OtpService otpService;
     //private final MailService mailService;
@@ -98,8 +93,14 @@ public class AccountServiceImpl implements AccountService {
 
             loginAttemptChecked.loginSucceeded(name);
 
-            LoginAttempt loginAttempt = new LoginAttempt();
+            TrustDevice trustDevice = new TrustDevice();
+            trustDevice.setAccount(account);
+            trustDeviceService.create(trustDevice);
 
+            LoginAttempt loginAttempt = new LoginAttempt();
+            loginAttempt.setAccount(account);
+            loginAttempt.setTrustDevice(trustDevice);
+            loginAttemptService.create(loginAttempt);
 
             try {
                 String jwtToken = jwtTokenUtil.generateToken((UserDetails) account);
