@@ -159,7 +159,7 @@ public class AccountServiceImpl implements AccountService {
 
         log.info("User principal: {}", account);
 
-        return account;
+        return accountMapper.entityToDTO(account);
     }
 
     private boolean usernameExists(String username) {
