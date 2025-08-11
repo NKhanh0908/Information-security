@@ -49,18 +49,7 @@ public class WebSecurityConfiguration {
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
-
-                                "/accounts",
-                                "/accounts/sign-in",
-
-                                "/department/{id}",
-                                "/department/filter",
-
-                                "/employee/filter",
-                                "/employee/{id}",
-
-                                "/recruitment/{id}",
-                                "/recruitment/filter"
+                                "/**"
                         ).permitAll()
 
                         // Account management
