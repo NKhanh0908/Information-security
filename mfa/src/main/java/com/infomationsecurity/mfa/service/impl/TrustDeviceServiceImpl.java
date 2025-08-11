@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @RequiredArgsConstructor
 @Slf4j
 @Service
@@ -21,6 +23,15 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
     @Override
     public TrustDevice create(Account account, String ip, String userAgent) {
         log.info("Creating trust device for account ID: {}", account.getAccountId());
+
+        Optional<TrustDevice> existingTrustDevice = trustDeviceRepository.findByDeviceIpAddressAndDeviceNameAndDeviceLocation(
+                ip, extractDeviceName(userAgent), getLocationFromIP(ip));
+
+        if (existingTrustDevice.isPresent()) {
+            log.info("Trust device already exists for account ID: {}, IP: {}, Device Name: {}, Location: {}",
+                    account.getAccountId(), ip, extractDeviceName(userAgent), getLocationFromIP(ip));
+            return existingTrustDevice.get();
+        }
 
         TrustDevice trustDevice = trustDeviceMapper.createTrustDevice(ip, extractDeviceName(userAgent), getLocationFromIP(ip));
         trustDevice.setAccount(account);
