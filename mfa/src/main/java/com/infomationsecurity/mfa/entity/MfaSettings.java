@@ -34,7 +34,7 @@ public class MfaSettings {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "mfa_primary_method", nullable = false)
-    private MfaMethod mfaPrimaryMethod;
+    private MfaMethod mfaPrimaryMethod = MfaMethod.EMAIL;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "mfa_backup_method")
