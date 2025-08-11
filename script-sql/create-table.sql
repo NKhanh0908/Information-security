@@ -12,10 +12,10 @@ DROP TABLE IF EXISTS mfa_settings;
 CREATE TABLE `users` (
     `user_id` INT PRIMARY KEY AUTO_INCREMENT COMMENT "User ID",
     `user_name` VARCHAR(100) NOT NULL COMMENT "Name of the user",
-    `user_gender` ENUM('male', 'female', 'other') NOT NULL COMMENT "Gender of the user",
-    `user_date_of_birth` DATE NOT NULL COMMENT "Date of birth of the user",
-    `user_address` VARCHAR(255) NOT NULL COMMENT "Address of the user",
-    `user_phone` VARCHAR(20) NOT NULL COMMENT "Phone number of the user",
+    `user_gender` ENUM('MALE', 'FEMALE', 'OTHER') COMMENT "Gender of the user",
+    `user_date_of_birth` DATE COMMENT "Date of birth of the user",
+    `user_address` VARCHAR(255) COMMENT "Address of the user",
+    `user_phone` VARCHAR(20) COMMENT "Phone number of the user",
     `user_created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT "Account creation timestamp",
     `user_updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Account update timestamp"
 );
