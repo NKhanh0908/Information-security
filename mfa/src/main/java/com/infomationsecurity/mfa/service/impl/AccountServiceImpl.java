@@ -104,10 +104,13 @@ public class AccountServiceImpl implements AccountService {
             loginAttemptChecked.loginSucceeded(name);
 
             account.setAccountLastLogin(LocalDateTime.now());
-            accountRepository.save(account);
+            AccountDTO accountDTO = accountMapper.entityToDTO(accountRepository.save(account));
 
             TrustDevice trustDevice = trustDeviceService.create(account, ip, userAgent);
-
+            if(!trustDevice.getDeviceIsVerified()) {
+                log.info("Trust device created for account ID: {}", account.getAccountId());
+                mfaSettingsService.getMfaSettingsByAccountId(accountDTO);
+            }
             loginAttemptService.create(account, trustDevice, userAgent);
 
             try {
