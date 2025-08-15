@@ -19,6 +19,7 @@ public class TrustDeviceDTO {
     private String deviceLocation;
     private String deviceUserAgent;
     private Boolean deviceIsActive;
+    private Boolean deviceIsVerified;
     private LocalDateTime deviceCreatedAt;
     private LocalDateTime deviceUpdatedAt;
 }

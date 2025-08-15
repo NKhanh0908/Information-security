@@ -72,9 +72,21 @@ public enum Error {
     OTP_MAX_ATTEMPTS_EXCEEDED(39005, "Maximum OTP attempts exceeded", HttpStatus.TOO_MANY_REQUESTS),
     OTP_ALREADY_SENT(39006, "OTP has already been sent", HttpStatus.BAD_REQUEST),
     OTP_SEND_FAILED(39007, "Failed to send OTP", HttpStatus.INTERNAL_SERVER_ERROR),
-    OTP_REQUIRED(39008, "OTP is required for this operation", HttpStatus.UNAUTHORIZED)
+    OTP_REQUIRED(39008, "OTP is required for this operation", HttpStatus.UNAUTHORIZED),
 
+    // MfaSettings related errors
+    MFA_SETTINGS_NOT_FOUND(40001, "MFA settings not found", HttpStatus.NOT_FOUND),
+    MFA_SETTINGS_UNABLE_TO_SAVE(40002, "Unable to save MFA settings", HttpStatus.INTERNAL_SERVER_ERROR),
+    MFA_SETTINGS_UNABLE_TO_UPDATE(40003, "Unable to update MFA settings", HttpStatus.INTERNAL_SERVER_ERROR),
+    MFA_SETTINGS_UNABLE_TO_DELETE(40004, "Unable to delete MFA settings", HttpStatus.INTERNAL_SERVER_ERROR),
+    MFA_SETTINGS_INVALID(40005, "Invalid MFA settings", HttpStatus.BAD_REQUEST),
+    MFA_SETTINGS_ALREADY_EXISTS(40006, "MFA settings already exist", HttpStatus.CONFLICT),
+    MFA_METHOD_NOT_SUPPORTED(40007, "MFA method not supported", HttpStatus.BAD_REQUEST),
 
+    // Totp related errors
+    TOTP_SECRET_KEY_NOT_FOUND(41001, "TOTP secret key not found", HttpStatus.NOT_FOUND),
+    TOTP_REGISTRATION_FAILED(41002, "TOTP registration failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    TOTP_VERIFICATION_FAILED(41003, "TOTP verification failed", HttpStatus.UNAUTHORIZED),
     ;
 
     private final int code;

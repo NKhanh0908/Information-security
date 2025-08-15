@@ -38,6 +38,9 @@ public class TrustDevice {
     @Column(name = "device_is_active")
     private Boolean deviceIsActive = true;
 
+    @Column(name = "device_is_verified")
+    private Boolean deviceIsVerified = false;
+
     @Column(name = "device_created_at")
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
