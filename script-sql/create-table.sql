@@ -50,6 +50,7 @@ CREATE TABLE `trust_device` (
     `device_ip_address` VARCHAR(45) NOT NULL COMMENT "IP address of the device",
     `device_location` VARCHAR(255) NOT NULL COMMENT "Location of the device",
     `device_is_active` BOOLEAN DEFAULT TRUE COMMENT "Is the device active?",
+    `device_is_verified` BOOLEAN DEFAULT FALSE COMMENT "Is the device verified?",
     `device_created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT "Device registration timestamp",
     `device_updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Device update timestamp"
 );
