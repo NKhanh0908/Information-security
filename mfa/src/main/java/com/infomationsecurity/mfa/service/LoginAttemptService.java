@@ -6,12 +6,19 @@ import com.infomationsecurity.mfa.entity.LoginAttempt;
 import com.infomationsecurity.mfa.entity.TrustDevice;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
 @Service
 public interface LoginAttemptService {
-    LoginAttempt create(Account account, TrustDevice trustDevice, String userAgent);
+    LoginAttemptDTO create(LoginAttempt loginAttempt);
 
-    LoginAttemptDTO update(LoginAttempt loginAttempt);
+    CompletableFuture<LoginAttemptDTO> saveSuccessfulLoginAttempt(Account account, TrustDevice trustDevice, String userAgent);
 
-    LoginAttemptDTO getLoginAttemptByAccountId(Integer accountId);
+    CompletableFuture<LoginAttemptDTO> saveFailedLoginAttempt(Account account, TrustDevice trustDevice, String userAgent, String failureReason);
+
+    List<LoginAttemptDTO> getLoginAttemptByAccount();
+
+    List<LoginAttemptDTO> getLoginAttemptByTrustDeviceId(Integer trustDeviceId);
 
 }
