@@ -2,7 +2,6 @@ package com.infomationsecurity.mfa.service.impl;
 
 import com.infomationsecurity.mfa.dto.response.MfaSettingsDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
-import com.infomationsecurity.mfa.entity.Account;
 import com.infomationsecurity.mfa.entity.MfaSettings;
 import com.infomationsecurity.mfa.enums.MfaMethod;
 import com.infomationsecurity.mfa.exception.CustomException;
@@ -12,14 +11,14 @@ import com.infomationsecurity.mfa.repository.MfaSettingsRepository;
 import com.infomationsecurity.mfa.service.AccountService;
 import com.infomationsecurity.mfa.service.MfaSettingsService;
 import com.infomationsecurity.mfa.service.TOTPService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
-@RequiredArgsConstructor
 @Slf4j
 @Service
 public class MfaSettingsServiceImpl implements MfaSettingsService {
@@ -30,11 +29,22 @@ public class MfaSettingsServiceImpl implements MfaSettingsService {
     private final TOTPService totpService;
     private final AccountService accountService;
 
+    public MfaSettingsServiceImpl(MfaSettingsRepository mfaSettingsRepository,
+                                  MfaSettingsMapper mfaSettingsMapper,
+                                  TOTPService totpService,
+                                  @Lazy AccountService accountService) {
+        this.mfaSettingsRepository = mfaSettingsRepository;
+        this.mfaSettingsMapper = mfaSettingsMapper;
+        this.totpService = totpService;
+        this.accountService = accountService;
+    }
+
+    @Async("mfaTaskExecutor")
     @Override
-    public MfaSettings create(MfaSettings mfaSettings) {
+    public CompletableFuture<MfaSettings> create(MfaSettings mfaSettings) {
         log.info("Creating MFA settings for account ID: {}", mfaSettings.getAccount().getAccountId());
 
-        return mfaSettingsRepository.save(mfaSettings);
+        return CompletableFuture.completedFuture(mfaSettingsRepository.save(mfaSettings));
     }
 
     @Override

@@ -8,10 +8,11 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public interface MfaSettingsService {
-    MfaSettings create(MfaSettings mfaSettings);
+    CompletableFuture<MfaSettings> create(MfaSettings mfaSettings);
 
     MfaSettingsDTO update(MfaSettings mfaSettings);
 
