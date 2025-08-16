@@ -61,7 +61,6 @@ public class AccountServiceImpl implements AccountService {
      * @throws RuntimeException if the username does not exist, the password is invalid,
      *                          or token generation fails
      */
-    @Transactional
     @Override
     public AuthenticationDTO signIn(FormLoginDTO formLoginDTO) {
         try {
@@ -77,9 +76,15 @@ public class AccountServiceImpl implements AccountService {
 
             String key = name + ":" + ip;
 
+            if(!account.isAccountNonLocked()) {
+                log.warn("Account is locked: {}", name);
+                loginAttemptService.saveFailedLoginAttempt(account, null, userAgent, "Account is locked");
+                throw new CustomException(Error.ACCOUNT_LOCKED);
+            }
+
             if (loginAttemptChecked.isBlocked(key)) {
                 log.warn("Account is temporarily locked due to too many failed login attempts: {}", name);
-                // saveFailedLoginAttempt(account, null, userAgent, "Account temporarily locked due to multiple failed attempts");
+                loginAttemptService.saveFailedLoginAttempt(account, null, userAgent, "Account temporarily locked due to multiple failed attempts");
                 throw new CustomException(Error.ACCOUNT_LOCKED_TEMPORARILY);
             }
 
@@ -91,10 +96,13 @@ public class AccountServiceImpl implements AccountService {
                 int remaining = loginAttemptChecked.getRemainingAttempts(key);
                 log.warn("Login attempt failed for user: {}, remaining attempts: {}", name, remaining);
 
-//                String failureReason = remaining <= 0 ? "Account locked due to multiple failed attempts" : "Invalid password";
-//                saveFailedLoginAttempt(account, null, userAgent, failureReason);
+                String failureReason = remaining <= 0 ? "Account locked due to multiple failed attempts" : "Invalid password";
+                loginAttemptService.saveFailedLoginAttempt(account, null, userAgent, failureReason);
 
                 if (remaining <= 0) {
+                    account.setAccountIsLocked(true);
+                    account.setAccountLockedTime(LocalDateTime.now());
+                    accountRepository.save(account);
                     throw new CustomException(Error.ACCOUNT_LOCKED_TEMPORARILY);
                 } else {
                     throw new CustomException(Error.ACCOUNT_INVALID_PASSWORD);
@@ -111,7 +119,7 @@ public class AccountServiceImpl implements AccountService {
                 log.info("Trust device created for account ID: {}", account.getAccountId());
                 mfaSettingsService.getMfaSettingsByAccountId(accountDTO);
             }
-            loginAttemptService.create(account, trustDevice, userAgent);
+            loginAttemptService.saveSuccessfulLoginAttempt(account, trustDevice, userAgent);
 
             try {
                 String jwtToken = jwtTokenUtil.generateToken((UserDetails) account);
@@ -143,23 +151,17 @@ public class AccountServiceImpl implements AccountService {
      * @return an {@link AccountDTO} representing the newly created account
      * @throws RuntimeException if the username already exists or referenced employee/role not found
      */
-    @Transactional
     @Override
     public AccountDTO signUp(AccountCreateDTO accountCreateDTO) {
         log.info("Creating account for username: {}", accountCreateDTO.getUsername());
 
-        if (usernameExists(accountCreateDTO.getUsername())) {
-            throw new CustomException(Error.ACCOUNT_ALREADY_EXISTS);
-        }
-
         User user = new User();
         user.setUserName(accountCreateDTO.getUsername());
         user.setUserGender(accountCreateDTO.getGender());
-        User userSaved = userService.create(user);
 
         Account account = accountMapper.createDTOToEntity(accountCreateDTO);
         account.setAccountPassword(passwordEncoder.encode(accountCreateDTO.getPassword()));
-        account.setUser(userSaved);
+        account.setUser(user);
         Account accountSaved = accountRepository.save(account);
 
         MfaSettings mfaSettings = new MfaSettings();
@@ -188,6 +190,12 @@ public class AccountServiceImpl implements AccountService {
         return accountMapper.entityToDTO(account);
     }
 
+    /**
+     * Checks if a username already exists in the system.
+     *
+     * @param username the username to check
+     * @return true if the username exists, false otherwise
+     */
     private boolean usernameExists(String username) {
         return accountRepository.findByAccountUsername(username).isPresent();
     }
