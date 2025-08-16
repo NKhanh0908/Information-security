@@ -27,7 +27,7 @@ public class Account implements UserDetails {
     @Column(name = "account_id")
     private Integer accountId;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
