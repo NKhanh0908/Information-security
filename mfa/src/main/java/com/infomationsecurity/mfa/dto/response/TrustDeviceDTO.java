@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
@@ -17,6 +19,7 @@ public class TrustDeviceDTO {
     private String deviceLocation;
     private String deviceUserAgent;
     private Boolean deviceIsActive;
-    private String deviceCreatedAt;
-    private String deviceUpdatedAt;
+    private Boolean deviceIsVerified;
+    private LocalDateTime deviceCreatedAt;
+    private LocalDateTime deviceUpdatedAt;
 }

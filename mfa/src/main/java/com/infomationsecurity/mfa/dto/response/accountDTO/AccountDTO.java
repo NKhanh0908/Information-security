@@ -1,4 +1,4 @@
-package com.infomationsecurity.mfa.dto.response;
+package com.infomationsecurity.mfa.dto.response.accountDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +15,6 @@ public class AccountDTO {
     private Integer accountId;
     private Integer userId;
     private String accountUsername;
-    private String accountPassword;
     private String accountEmail;
     private Boolean accountIsLocked;
     private LocalDateTime accountLockedTime;

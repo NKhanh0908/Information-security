@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -33,15 +35,19 @@ public class TrustDevice {
     @Column(name = "device_location", nullable = false)
     private String deviceLocation;
 
-    @Column(name = "device_user_agent", nullable = false)
-    private String deviceUserAgent;
-
     @Column(name = "device_is_active")
     private Boolean deviceIsActive = true;
 
+    @Column(name = "device_is_verified")
+    private Boolean deviceIsVerified = false;
+
     @Column(name = "device_created_at")
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime deviceCreatedAt;
 
     @Column(name = "device_updated_at")
+    @UpdateTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime deviceUpdatedAt;
 }

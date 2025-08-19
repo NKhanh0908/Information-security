@@ -3,13 +3,19 @@ CREATE DATABASE informationsecurity;
 
 USE informationsecurity;
 
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS account;
+DROP TABLE IF EXISTS login_attempt;
+DROP TABLE IF EXISTS trust_device;
+DROP TABLE IF EXISTS mfa_settings;
+
 CREATE TABLE `users` (
     `user_id` INT PRIMARY KEY AUTO_INCREMENT COMMENT "User ID",
     `user_name` VARCHAR(100) NOT NULL COMMENT "Name of the user",
-    `user_gender` ENUM('male', 'female', 'other') NOT NULL COMMENT "Gender of the user",
-    `user_date_of_birth` DATE NOT NULL COMMENT "Date of birth of the user",
-    `user_address` VARCHAR(255) NOT NULL COMMENT "Address of the user",
-    `user_phone` VARCHAR(20) NOT NULL COMMENT "Phone number of the user",
+    `user_gender` ENUM('MALE', 'FEMALE', 'OTHER') COMMENT "Gender of the user",
+    `user_date_of_birth` DATE COMMENT "Date of birth of the user",
+    `user_address` VARCHAR(255) COMMENT "Address of the user",
+    `user_phone` VARCHAR(20) COMMENT "Phone number of the user",
     `user_created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT "Account creation timestamp",
     `user_updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Account update timestamp"
 );
@@ -30,7 +36,7 @@ CREATE TABLE `account`(
 CREATE TABLE `login_attempt`(
     `attempt_id` INT PRIMARY KEY AUTO_INCREMENT COMMENT "Attempt ID",
     `account_id` INT NOT NULL COMMENT "Account ID",
-    `attempt_ip_address` VARCHAR(45) NOT NULL COMMENT "IP address of the attempt",
+    `trust_device_id` INT NOT NULL COMMENT "Trusted Device ID",
     `attempt_success` BOOLEAN NOT NULL COMMENT "Was the attempt successful?",
     `attempt_user_agent` VARCHAR(255) NOT NULL COMMENT "User agent string of the attempt",
     `attempt_failure_reason` VARCHAR(255) COMMENT "Reason for failure (if any)",
@@ -43,8 +49,8 @@ CREATE TABLE `trust_device` (
     `device_name` VARCHAR(100) NOT NULL COMMENT "Name of the device",
     `device_ip_address` VARCHAR(45) NOT NULL COMMENT "IP address of the device",
     `device_location` VARCHAR(255) NOT NULL COMMENT "Location of the device",
-    `device_user_agent` VARCHAR(255) NOT NULL COMMENT "User agent string of the device",
     `device_is_active` BOOLEAN DEFAULT TRUE COMMENT "Is the device active?",
+    `device_is_verified` BOOLEAN DEFAULT FALSE COMMENT "Is the device verified?",
     `device_created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT "Device registration timestamp",
     `device_updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Device update timestamp"
 );
@@ -73,6 +79,10 @@ ALTER TABLE account ADD CONSTRAINT fk_account_user
 ALTER TABLE login_attempt ADD CONSTRAINT fk_login_account 
     FOREIGN KEY (account_id) REFERENCES account(account_id);
 
+ALTER TABLE login_attempt ADD CONSTRAINT fk_login_trust_device
+    FOREIGN KEY (trust_device_id) REFERENCES trust_device(device_id);
+
+
 ALTER TABLE trust_device ADD CONSTRAINT fk_device_account 
     FOREIGN KEY (account_id) REFERENCES account(account_id);
 
@@ -82,5 +92,4 @@ ALTER TABLE mfa_settings ADD CONSTRAINT fk_mfa_account
 -- Add indexes
 CREATE INDEX idx_account_username ON account(account_username);
 CREATE INDEX idx_account_email ON account(account_email);
-CREATE INDEX idx_login_attempt_ip ON login_attempt(attempt_ip_address);
 CREATE INDEX idx_login_attempt_time ON login_attempt(attempt_created_at);

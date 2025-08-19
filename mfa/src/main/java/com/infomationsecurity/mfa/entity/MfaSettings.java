@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,7 +25,7 @@ public class MfaSettings {
     @Column(name = "mfa_id")
     private Integer mfaId;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "account_id", nullable = false)
     private Account account;
 
@@ -32,7 +34,7 @@ public class MfaSettings {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "mfa_primary_method", nullable = false)
-    private MfaMethod mfaPrimaryMethod;
+    private MfaMethod mfaPrimaryMethod = MfaMethod.EMAIL;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "mfa_backup_method")
@@ -61,8 +63,12 @@ public class MfaSettings {
     private Boolean mfaRequiredMfaForSensitiveActions = false;
 
     @Column(name = "mfa_created_at")
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime mfaCreatedAt;
 
     @Column(name = "mfa_updated_at")
+    @UpdateTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime mfaUpdatedAt;
 }
