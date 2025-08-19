@@ -1,5 +1,6 @@
 package com.infomationsecurity.mfa.service.impl;
 
+import com.infomationsecurity.mfa.dto.oath2.GitHubUserInfo;
 import com.infomationsecurity.mfa.dto.request.accountDTO.AccountCreateDTO;
 import com.infomationsecurity.mfa.dto.request.accountDTO.FormLoginDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
@@ -9,22 +10,29 @@ import com.infomationsecurity.mfa.exception.CustomException;
 import com.infomationsecurity.mfa.mapper.AccountMapper;
 import com.infomationsecurity.mfa.repository.AccountRepository;
 import com.infomationsecurity.mfa.service.*;
+import com.infomationsecurity.mfa.util.GithubUtils;
 import com.infomationsecurity.mfa.util.JwtTokenUtil;
 import com.infomationsecurity.mfa.util.LoginAttemptChecked;
 import com.infomationsecurity.mfa.util.OtpService;
 import com.infomationsecurity.mfa.exception.Error;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -43,6 +51,8 @@ public class AccountServiceImpl implements AccountService {
     private final TrustDeviceService trustDeviceService;
     private final LoginAttemptChecked loginAttemptChecked;
     private final OtpService otpService;
+    private final RestTemplate restTemplate;
+    private final GithubUtils githubUtils;
     //private final MailService mailService;
 
     /**
@@ -109,28 +119,7 @@ public class AccountServiceImpl implements AccountService {
                 }
             }
 
-            loginAttemptChecked.loginSucceeded(name);
-
-            account.setAccountLastLogin(LocalDateTime.now());
-            AccountDTO accountDTO = accountMapper.entityToDTO(accountRepository.save(account));
-
-            TrustDevice trustDevice = trustDeviceService.create(account, ip, userAgent);
-            if(!trustDevice.getDeviceIsVerified()) {
-                log.info("Trust device created for account ID: {}", account.getAccountId());
-                mfaSettingsService.getMfaSettingsByAccountId(accountDTO);
-            }
-            loginAttemptService.saveSuccessfulLoginAttempt(account, trustDevice, userAgent);
-
-            try {
-                String jwtToken = jwtTokenUtil.generateToken((UserDetails) account);
-                String refreshToken = jwtTokenUtil.generateRefreshToken((UserDetails) account);
-                return AuthenticationDTO.builder()
-                        .token(jwtToken)
-                        .refreshToken(refreshToken)
-                        .build();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            return processSuccessfulLogin(account, ip, userAgent, name);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -172,6 +161,125 @@ public class AccountServiceImpl implements AccountService {
     }
 
     /**
+     * @return
+     */
+    @Override
+    public AccountDTO signUpWithGoogle() {
+        return null;
+    }
+
+    /**
+     * @return
+     */
+
+    /**
+     * @param authorizationCode
+     * @return
+     */
+    @Override
+    public AuthenticationDTO authWithGitHub(String authorizationCode) {
+        try {
+            log.info("Starting GitHub OAuth2 sign in process");
+
+            ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            String ip = requestAttributes != null ? requestAttributes.getRequest().getRemoteAddr() : "unknown";
+            String userAgent = requestAttributes != null ? requestAttributes.getRequest().getHeader("User-Agent") : "unknown";
+
+            // Exchange authorization code for access token
+            String accessToken = githubUtils.exchangeGithubCodeForToken(authorizationCode);
+
+            // Get user info from GitHub
+            GitHubUserInfo githubUserInfo = githubUtils.getGithubUserInfo(accessToken);
+
+            // Find existing account
+            Optional<Account> result = accountRepository.findAccountByAccountEmail(githubUserInfo.getEmail());
+            // If account does not exist, create a new one
+            if(result.isPresent()){
+                log.info("Found existing account for email: {}", githubUserInfo.getEmail());
+
+                Account account = result.get();
+
+                if (!account.isAccountNonLocked()) {
+                    log.warn("GitHub OAuth2 login attempt for locked account: {}", account.getAccountUsername());
+                    throw new CustomException(Error.ACCOUNT_LOCKED);
+                }
+
+                return processSuccessfulLogin(account, ip, userAgent, account.getAccountUsername());
+
+            }else{
+                log.info("No existing account found for email: {}, creating new account", githubUserInfo.getEmail());
+                Account account = createAccountForGithub(authorizationCode);
+
+                return processSuccessfulLogin(account, ip, userAgent, account.getAccountUsername());
+
+            }
+        } catch (Exception e) {
+            log.error("Error during GitHub sign in: ", e);
+            throw new RuntimeException("GitHub sign in failed", e);
+        }
+    }
+
+    private Account createAccountForGithub(String authorizationCode) {
+        try {
+            log.info("Starting GitHub OAuth2 sign up process");
+
+            GitHubUserInfo githubUserInfo = githubUtils.getGithubUserInfo(
+                    githubUtils.exchangeGithubCodeForToken(authorizationCode)
+            );
+
+            // Check if user already exists
+            Optional<Account> existingAccount = accountRepository.findAccountByAccountEmail(githubUserInfo.getEmail());
+            if (existingAccount.isPresent()) {
+                log.warn("Account with email {} already exists", githubUserInfo.getEmail());
+                throw new CustomException(Error.ACCOUNT_EMAIL_ALREADY_EXISTS);
+            }
+
+            // Create new account
+            Account account = createAccountFromGithubInfo(githubUserInfo);
+            Account savedAccount = accountRepository.save(account);
+
+            // Create MFA settings
+            MfaSettings mfaSettings = new MfaSettings();
+            mfaSettings.setAccount(savedAccount);
+            mfaSettingsService.create(mfaSettings);
+
+            log.info("Successfully created account via GitHub OAuth2: {}", savedAccount.getAccountUsername());
+            return savedAccount;
+
+        } catch (Exception e) {
+            log.error("Error during GitHub sign up: ", e);
+            throw new RuntimeException("GitHub sign up failed", e);
+        }
+    }
+
+
+    private AuthenticationDTO processSuccessfulLogin(Account account, String ip, String userAgent, String username) {
+        try {
+            loginAttemptChecked.loginSucceeded(username);
+            account.setAccountLastLogin(LocalDateTime.now());
+            AccountDTO accountDTO = accountMapper.entityToDTO(accountRepository.save(account));
+
+            TrustDevice trustDevice = trustDeviceService.create(account, ip, userAgent);
+            if (!trustDevice.getDeviceIsVerified()) {
+                log.info("Trust device created for account ID: {}", account.getAccountId());
+                mfaSettingsService.getMfaSettingsByAccountId(accountDTO);
+            }
+            loginAttemptService.saveSuccessfulLoginAttempt(account, trustDevice, userAgent);
+
+            String jwtToken = jwtTokenUtil.generateToken((UserDetails) account);
+            String refreshToken = jwtTokenUtil.generateRefreshToken((UserDetails) account);
+
+            return AuthenticationDTO.builder()
+                    .token(jwtToken)
+                    .refreshToken(refreshToken)
+                    .build();
+        } catch (Exception e) {
+            log.error("Error processing successful login: ", e);
+            throw new RuntimeException("Login processing failed", e);
+        }
+    }
+
+    /**
      * Retrieves the currently authenticated user's account information.
      *
      * @return the {@link Account} of the currently authenticated user
@@ -198,6 +306,33 @@ public class AccountServiceImpl implements AccountService {
      */
     private boolean usernameExists(String username) {
         return accountRepository.findByAccountUsername(username).isPresent();
+    }
+
+    private Account createAccountFromGithubInfo(GitHubUserInfo githubUserInfo) {
+        User user = new User();
+        user.setUserName(githubUserInfo.getName() != null ? githubUserInfo.getName() : githubUserInfo.getLogin());
+
+        Account account = new Account();
+        account.setAccountUsername(generateUniqueUsername(githubUserInfo.getEmail()));
+        account.setAccountEmail(githubUserInfo.getEmail());
+        account.setAccountPassword(passwordEncoder.encode(UUID.randomUUID().toString())); // Random password for OAuth users
+        account.setAccountIsLocked(false);
+        account.setUser(user);
+
+        return account;
+    }
+
+    private String generateUniqueUsername(String email) {
+        String baseUsername = email.split("@")[0];
+        String username = baseUsername;
+        int counter = 1;
+
+        while (usernameExists(username)) {
+            username = baseUsername + counter;
+            counter++;
+        }
+
+        return username;
     }
 
 }

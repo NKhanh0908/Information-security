@@ -10,7 +10,7 @@ public class UserMapper {
         return UserDTO.builder()
                 .userId(user.getUserId())
                 .userName(user.getUserName())
-                .userGender(user.getUserGender().name())
+                .userGender(user.getUserGender() != null ? user.getUserGender().name() : null)
                 .userDateOfBirth(user.getUserDateOfBirth() != null ? user.getUserDateOfBirth() : null)
                 .userAddress(user.getUserAddress() != null ? user.getUserAddress() : null)
                 .userPhone(user.getUserPhone() != null ? user.getUserPhone() : null)

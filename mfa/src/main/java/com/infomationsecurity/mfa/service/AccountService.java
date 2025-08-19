@@ -12,6 +12,10 @@ public interface AccountService {
 
     AccountDTO signUp(AccountCreateDTO accountCreateDTO);
 
+    AccountDTO signUpWithGoogle();
+
+    AuthenticationDTO authWithGitHub(String authorizationCode);
+
     AccountDTO getAccountAuth();
 
     //ForgotPasswordResponseDTO forgotPassword(String email);

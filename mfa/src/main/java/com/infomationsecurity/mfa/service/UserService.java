@@ -13,5 +13,7 @@ public interface UserService {
 
     UserDTO getById(Integer userId);
 
+    UserDTO getCurrentUser();
+
 
 }

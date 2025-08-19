@@ -12,5 +12,8 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
     @Transactional(readOnly = true)
     Optional<Account> findByAccountUsername(String username);
 
+    @Transactional(readOnly = true)
+    Optional<Account> findAccountByAccountEmail(String email);
+
     // You can also define methods for other queries as required
 }
