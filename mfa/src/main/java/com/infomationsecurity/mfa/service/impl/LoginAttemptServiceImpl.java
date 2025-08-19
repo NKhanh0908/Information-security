@@ -1,5 +1,6 @@
 package com.infomationsecurity.mfa.service.impl;
 
+import com.infomationsecurity.mfa.dto.request.fiters.LoginAttemptFilter;
 import com.infomationsecurity.mfa.dto.response.LoginAttemptDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
 import com.infomationsecurity.mfa.entity.Account;
@@ -9,8 +10,12 @@ import com.infomationsecurity.mfa.mapper.LoginAttemptMapper;
 import com.infomationsecurity.mfa.repository.LoginAttemptRepository;
 import com.infomationsecurity.mfa.service.AccountService;
 import com.infomationsecurity.mfa.service.LoginAttemptService;
+import com.infomationsecurity.mfa.specification.LoginAttemptSpecification;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -106,5 +111,25 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
             .stream()
             .map(loginAttemptMapper::entityToDTO)
             .toList();
+    }
+
+    /**
+     * @param filter
+     * @param page
+     * @param size
+     * @return
+     */
+    @Override
+    public Page<LoginAttemptDTO> filter(LoginAttemptFilter filter, Integer page, Integer size) {
+        log.info("Filtering login attempts with filter: {}, page: {}, size: {}", filter, page, size);
+
+        AccountDTO accountDTO = accountService.getAccountAuth();
+        filter.setAccountId(accountDTO.getAccountId());
+
+        Specification<LoginAttempt> specification = LoginAttemptSpecification.filter(filter);
+
+        Page<LoginAttempt> loginAttemptPage = loginAttemptRepository.findAll(specification, PageRequest.of(page, size));
+
+        return loginAttemptPage.map(loginAttemptMapper::entityToDTO);
     }
 }

@@ -81,6 +81,10 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
     @Override
     public Page<TrustDeviceDTO> filter(TrustDeviceFilter filter, Integer page, Integer size) {
         log.info("Filtering trust devices with filter: {}, page: {}, size: {}", filter, page, size);
+
+        AccountDTO accountDTO = accountService.getAccountAuth();
+        filter.setAccountId(accountDTO.getAccountId());
+
         Specification<TrustDevice> specification = TrustDeviceSpecification.filter(filter);
 
         Pageable pageable = PageRequest.of(page, size);

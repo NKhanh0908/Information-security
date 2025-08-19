@@ -1,5 +1,6 @@
 package com.infomationsecurity.mfa.controller;
 
+import com.infomationsecurity.mfa.dto.request.fiters.LoginAttemptFilter;
 import com.infomationsecurity.mfa.dto.response.APIResponse;
 import com.infomationsecurity.mfa.dto.response.LoginAttemptDTO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -64,6 +66,28 @@ public class LoginAttemptController {
         List<LoginAttemptDTO> result = loginAttemptService.getLoginAttemptByTrustDeviceId(trustDeviceId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new APIResponse<>(true, "Login attempts retrieved successfully", result, null, request.getRequestURI()));
+    }
+
+    @GetMapping("/filter")
+    @Operation(
+            summary = "Filter login attempts",
+            description = "Filter login attempts based on various criteria",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Login attempts filtered successfully",
+                            content = @Content(schema = @Schema(implementation = LoginAttemptDTO.class))
+                    )
+            }
+    )
+    public ResponseEntity<APIResponse<Page<LoginAttemptDTO>>> filterLoginAttempts(
+            @Parameter(description = "Filter criteria for login attempts") LoginAttemptFilter filter,
+            @Parameter(description = "Page number for pagination") Integer page,
+            @Parameter(description = "Page size for pagination") Integer size,
+            HttpServletRequest request) {
+        Page<LoginAttemptDTO> result = loginAttemptService.filter(filter, page, size);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new APIResponse<>(true, "Login attempts filtered successfully", result, null, request.getRequestURI()));
     }
 
 }
