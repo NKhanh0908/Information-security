@@ -44,6 +44,7 @@ public enum Error {
     JWT_INVALID(14001, "Invalid JWT token", HttpStatus.UNAUTHORIZED),
     JWT_EXPIRED(14002, "JWT token expired", HttpStatus.UNAUTHORIZED),
     JWT_MALFORMED(14003, "Malformed JWT token", HttpStatus.UNAUTHORIZED),
+    INVALID_REFRESH_TOKEN(14004, "Invalid refresh token", HttpStatus.UNAUTHORIZED),
 
     // General validation errors
     INVALID_DATE_FORMAT(33001, "Invalid date format", HttpStatus.BAD_REQUEST),

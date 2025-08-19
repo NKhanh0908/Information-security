@@ -3,6 +3,7 @@ package com.infomationsecurity.mfa.service.impl;
 import com.infomationsecurity.mfa.dto.oath2.GitHubUserInfo;
 import com.infomationsecurity.mfa.dto.request.accountDTO.AccountCreateDTO;
 import com.infomationsecurity.mfa.dto.request.accountDTO.FormLoginDTO;
+import com.infomationsecurity.mfa.dto.request.accountDTO.RefreshTokenDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AuthenticationDTO;
 import com.infomationsecurity.mfa.entity.*;
@@ -296,6 +297,36 @@ public class AccountServiceImpl implements AccountService {
         log.info("User principal: {}", account);
 
         return accountMapper.entityToDTO(account);
+    }
+
+    /**
+     * @param refreshTokenDTO
+     * @return
+     */
+    @Override
+    public AuthenticationDTO refreshToken(RefreshTokenDTO refreshTokenDTO) {
+        log.info("Refreshing token for user");
+        try {
+            String refreshToken = refreshTokenDTO.getRefreshToken();
+            if (!jwtTokenUtil.isTokenExpired(refreshToken)) {
+                throw new CustomException(Error.INVALID_REFRESH_TOKEN);
+            }
+
+            String username = jwtTokenUtil.extractTokenGetUsername(refreshToken);
+            Account account = accountRepository.findByAccountUsername(username)
+                    .orElseThrow(() -> new CustomException(Error.ACCOUNT_NOT_FOUND));
+
+            String jwtToken = jwtTokenUtil.generateToken((UserDetails) account);
+            String newRefreshToken = jwtTokenUtil.generateRefreshToken((UserDetails) account);
+
+            return AuthenticationDTO.builder()
+                    .token(jwtToken)
+                    .refreshToken(newRefreshToken)
+                    .build();
+        } catch (Exception e) {
+            log.error("Error processing successful login: ", e);
+            throw new RuntimeException("Login processing failed", e);
+        }
     }
 
     /**

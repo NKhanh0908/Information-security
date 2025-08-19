@@ -5,6 +5,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -23,13 +24,18 @@ public class JwtTokenUtil {
     private final SecretKey secretKeyForAccessToken ;
     private final SecretKey secretKeyForRefreshToken = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
-    private static final long EXPIRATION_TIME_FOR_TOKEN = 2_592_000_000L; // 1 Month (30 Days)
-    private static final long EXPIRATION_TIME_FOR_REFRESH_TOKEN = 2_592_000_000L; // 1 Month (30 Days)
+    private final long accessTokenExpiration;
+    private final long refreshTokenExpiration;
 
-    public JwtTokenUtil(){
-        String secreteString = "843567893696976453275974432697R634976R738467TR678T34865R6834R8763T478378637664538745673865783678548735687R3";
-        byte[] keyBytes = Base64.getDecoder().decode(secreteString.getBytes(StandardCharsets.UTF_8));
+    public JwtTokenUtil(
+            @Value("${jwt.secret-key}") String jwtSecret,
+            @Value("${jwt.access-expiration:900000}") long accessTokenExpiration,
+            @Value("${jwt.refresh-expiration:604800000}") long refreshTokenExpiration
+    ) {
+        byte[] keyBytes = Base64.getDecoder().decode(jwtSecret.getBytes(StandardCharsets.UTF_8));
         this.secretKeyForAccessToken = new SecretKeySpec(keyBytes, "HmacSHA256");
+        this.accessTokenExpiration = accessTokenExpiration;
+        this.refreshTokenExpiration = refreshTokenExpiration;
     }
 
     private Map<String, Object> extractRole(UserDetails userDetails) {
@@ -46,7 +52,7 @@ public class JwtTokenUtil {
                 .subject(userDetails.getUsername())
                 .claims(extractRole(userDetails))
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME_FOR_TOKEN))
+                .expiration(new Date(System.currentTimeMillis() + accessTokenExpiration))
                 .signWith(secretKeyForAccessToken)
                 .compact();
     }
@@ -56,7 +62,7 @@ public class JwtTokenUtil {
                 .subject(userDetails.getUsername())
                 .claims(extractRole(userDetails))
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME_FOR_REFRESH_TOKEN))
+                .expiration(new Date(System.currentTimeMillis() + refreshTokenExpiration))
                 .signWith(secretKeyForRefreshToken)
                 .compact();
     }

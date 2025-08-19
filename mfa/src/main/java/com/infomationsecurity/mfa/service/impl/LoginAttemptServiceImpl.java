@@ -43,6 +43,7 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
     }
 
     /**
+     * Saves a successful login attempt for the given account and trust device.
      * @param account
      * @param trustDevice
      * @param userAgent
@@ -61,6 +62,7 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
     }
 
     /**
+     * Saves a failed login attempt for the given account and trust device.
      * @param account
      * @param trustDevice
      * @param userAgent
