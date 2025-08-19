@@ -1,6 +1,6 @@
 package com.infomationsecurity.mfa.controller;
 
-import com.infomationsecurity.mfa.dto.APIResponse;
+import com.infomationsecurity.mfa.dto.response.APIResponse;
 import com.infomationsecurity.mfa.dto.request.totpDTO.TOTPVerificationDTO;
 import com.infomationsecurity.mfa.dto.response.TOTPRegistrationDTO;
 import com.infomationsecurity.mfa.service.TOTPService;

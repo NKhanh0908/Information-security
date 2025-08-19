@@ -1,4 +1,4 @@
-package com.infomationsecurity.mfa.dto;
+package com.infomationsecurity.mfa.dto.response;
 
 import lombok.Getter;
 import lombok.Setter;

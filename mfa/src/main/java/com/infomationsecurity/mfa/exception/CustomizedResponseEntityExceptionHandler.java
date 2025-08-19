@@ -1,6 +1,6 @@
 package com.infomationsecurity.mfa.exception;
 
-import com.infomationsecurity.mfa.dto.APIResponse;
+import com.infomationsecurity.mfa.dto.response.APIResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

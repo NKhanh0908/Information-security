@@ -1,6 +1,6 @@
 package com.infomationsecurity.mfa.controller;
 
-import com.infomationsecurity.mfa.dto.APIResponse;
+import com.infomationsecurity.mfa.dto.response.APIResponse;
 import com.infomationsecurity.mfa.dto.response.LoginAttemptDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
