@@ -1,24 +1,43 @@
 package com.infomationsecurity.mfa.service.impl;
 
+import com.infomationsecurity.mfa.dto.request.fiters.TrustDeviceFilter;
 import com.infomationsecurity.mfa.dto.response.TrustDeviceDTO;
+import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
 import com.infomationsecurity.mfa.entity.Account;
 import com.infomationsecurity.mfa.entity.TrustDevice;
 import com.infomationsecurity.mfa.mapper.TrustDeviceMapper;
 import com.infomationsecurity.mfa.repository.TrustDeviceRepository;
+import com.infomationsecurity.mfa.service.AccountService;
 import com.infomationsecurity.mfa.service.TrustDeviceService;
+import com.infomationsecurity.mfa.specification.TrustDeviceSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.xml.sax.SAXParseException;
 
 import java.util.Optional;
 
-@RequiredArgsConstructor
 @Slf4j
 @Service
 public class TrustDeviceServiceImpl implements TrustDeviceService {
     private final TrustDeviceRepository trustDeviceRepository;
 
     private final TrustDeviceMapper trustDeviceMapper;
+
+    private final AccountService accountService;
+
+    public TrustDeviceServiceImpl(TrustDeviceRepository trustDeviceRepository,
+                                  TrustDeviceMapper trustDeviceMapper,
+                                  @Lazy AccountService accountService) {
+        this.trustDeviceRepository = trustDeviceRepository;
+        this.trustDeviceMapper = trustDeviceMapper;
+        this.accountService = accountService;
+    }
 
     @Override
     public TrustDevice create(Account account, String ip, String userAgent) {
@@ -45,8 +64,33 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
     }
 
     @Override
-    public TrustDeviceDTO getTrustDeviceByAccountId(Integer accountId) {
+    public TrustDeviceDTO getTrustDeviceByAccount() {
+        AccountDTO accountDTO = accountService.getAccountAuth();
+
+
+
         return null;
+    }
+
+    /**
+     * @param filter
+     * @param page
+     * @param size
+     * @return
+     */
+    @Override
+    public Page<TrustDeviceDTO> filter(TrustDeviceFilter filter, Integer page, Integer size) {
+        log.info("Filtering trust devices with filter: {}, page: {}, size: {}", filter, page, size);
+        Specification<TrustDevice> specification = TrustDeviceSpecification.filter(filter);
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<TrustDevice> trustDevicePage = trustDeviceRepository.findAll(specification, pageable);
+        if (trustDevicePage.isEmpty()) {
+            log.info("No trust devices found for the given filter.");
+            return Page.empty();
+        }
+        return trustDevicePage.map(trustDeviceMapper::entityToDTO);
     }
 
     private String extractDeviceName(String userAgent) {

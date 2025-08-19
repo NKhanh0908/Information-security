@@ -2,12 +2,13 @@ package com.infomationsecurity.mfa.repository;
 
 import com.infomationsecurity.mfa.entity.TrustDevice;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface TrustDeviceRepository extends JpaRepository<TrustDevice, Integer> {
+public interface TrustDeviceRepository extends JpaRepository<TrustDevice, Integer>, JpaSpecificationExecutor<TrustDevice> {
     // Define custom query methods if needed
     // For example, to find trust devices by account ID or other criteria
     // Optional<TrustDevice> findByAccountId(Integer accountId);
@@ -24,4 +25,5 @@ public interface TrustDeviceRepository extends JpaRepository<TrustDevice, Intege
     Optional<TrustDevice> findByDeviceIpAddressAndDeviceNameAndDeviceLocation(@Param("device_ip_address") String deviceIpAddress,
                                                                            @Param("device_name") String deviceName,
                                                                            @Param("device_location") String deviceLocation);
+
 }
