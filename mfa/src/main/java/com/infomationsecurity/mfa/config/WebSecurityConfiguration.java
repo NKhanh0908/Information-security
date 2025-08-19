@@ -17,8 +17,14 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 import static org.springframework.security.config.Customizer.withDefaults;
@@ -33,6 +39,12 @@ public class WebSecurityConfiguration {
     @Value("${server.servlet.context-path}")
     private String contextPath;
 
+    @Value("${oauth2.github.client-id}")
+    private String githubClientId;
+
+    @Value("${oauth2.github.client-secret}")
+    private String githubClientSecret;
+
     public WebSecurityConfiguration(OurUserDetailsService ourUserDetailsService,
                                     JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.ourUserDetailsService = ourUserDetailsService;
@@ -45,6 +57,7 @@ public class WebSecurityConfiguration {
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .cors(withDefaults())
                 .authorizeHttpRequests((auth) -> auth
+                        // Swagger documentation
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
@@ -52,14 +65,27 @@ public class WebSecurityConfiguration {
                                 "/**"
                         ).permitAll()
 
-                        // Account management
-                        .requestMatchers(HttpMethod.POST, contextPath + "/accounts")
-                        .hasAnyRole("ADMIN", "HR")
+                        // Public authentication endpoints
+                        .requestMatchers(HttpMethod.POST,
+                                contextPath + "/accounts/sign-in",
+                                contextPath + "/accounts/sign-in/google",
+                                contextPath + "/accounts/sign-in/github",
+                                contextPath + "/accounts/sign-up/google",
+                                contextPath + "/accounts/sign-up/github"
+                        ).permitAll()
+
+                        // OAuth2 callback endpoints
+                        .requestMatchers(
+                                "/oauth2/**",
+                                "/login/oauth2/**"
+                        ).permitAll()
 
                         .anyRequest()
                         .authenticated())
                 .httpBasic(withDefaults())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .oauth2Client(oauth2 -> oauth2
+                        .clientRegistrationRepository(clientRegistrationRepository()))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(
                         jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();
@@ -83,6 +109,35 @@ public class WebSecurityConfiguration {
         daoAuthenticationProvider.setUserDetailsService(ourUserDetailsService);
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
         return daoAuthenticationProvider;
+    }
+
+    @Bean
+    public ClientRegistrationRepository clientRegistrationRepository() {
+        return new InMemoryClientRegistrationRepository(
+                githubClientRegistration()
+        );
+    }
+
+    @Bean
+    public ClientRegistration githubClientRegistration() {
+        return ClientRegistration.withRegistrationId("github")
+                .clientId(githubClientId)
+                .clientSecret(githubClientSecret)
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .redirectUri("{baseUrl}/oauth2/callback/{registrationId}")
+                .scope("read:user", "user:email")
+                .authorizationUri("https://github.com/login/oauth/authorize")
+                .tokenUri("https://github.com/login/oauth/access_token")
+                .userInfoUri("https://api.github.com/user")
+                .userNameAttributeName("id")
+                .clientName("GitHub")
+                .build();
+    }
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
     }
 
 }
