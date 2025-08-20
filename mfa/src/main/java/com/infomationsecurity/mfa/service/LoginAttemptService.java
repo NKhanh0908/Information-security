@@ -20,6 +20,10 @@ public interface LoginAttemptService {
 
     CompletableFuture<LoginAttemptDTO> saveFailedLoginAttempt(Account account, TrustDevice trustDevice, String userAgent, String failureReason);
 
+    CompletableFuture<LoginAttemptDTO> saveLoginAttemptPendingMfa(Account account, TrustDevice trustDevice, String userAgent);
+
+    LoginAttemptDTO completeMfaVerification(Integer attemptId, boolean mfaSuccess, String mfaMethod);
+
     List<LoginAttemptDTO> getLoginAttemptByAccount();
 
     List<LoginAttemptDTO> getLoginAttemptByTrustDeviceId(Integer trustDeviceId);

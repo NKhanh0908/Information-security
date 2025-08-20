@@ -1,7 +1,6 @@
 package com.infomationsecurity.mfa.mapper;
 
-import com.infomationsecurity.mfa.dto.response.TrustDeviceDTO;
-import com.infomationsecurity.mfa.entity.Account;
+import com.infomationsecurity.mfa.dto.response.deviceDTO.TrustDeviceDTO;
 import com.infomationsecurity.mfa.entity.TrustDevice;
 import org.springframework.stereotype.Component;
 

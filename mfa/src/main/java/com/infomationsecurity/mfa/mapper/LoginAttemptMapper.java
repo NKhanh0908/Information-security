@@ -33,4 +33,12 @@ public class LoginAttemptMapper {
                 .attemptFailureReason(failureReason)
                 .build();
     }
+
+    public LoginAttempt createPendingMfaLoginAttempt(String userAgent) {
+        return LoginAttempt.builder()
+                .attemptSuccess(false)
+                .attemptUserAgent(userAgent)
+                .attemptFailureReason("Pending MFA verification")
+                .build();
+    }
 }

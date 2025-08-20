@@ -89,6 +89,40 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
         return CompletableFuture.completedFuture(create(loginAttempt));
     }
 
+    @Transactional
+    @Override
+    public CompletableFuture<LoginAttemptDTO> saveLoginAttemptPendingMfa(Account account, TrustDevice trustDevice, String userAgent) {
+        log.info("{} Saving login attempt pending MFA verification for account ID: {}, device: {}",
+                LOG_PREFIX, account.getAccountId(), trustDevice.getDeviceName());
+
+        LoginAttempt loginAttempt = loginAttemptMapper.createPendingMfaLoginAttempt(userAgent);
+        loginAttempt.setAccount(account);
+        loginAttempt.setTrustDevice(trustDevice);
+        return CompletableFuture.completedFuture(create(loginAttempt));
+    }
+
+    @Transactional
+    @Override
+    public LoginAttemptDTO completeMfaVerification(Integer attemptId, boolean mfaSuccess, String mfaMethod) {
+        log.info("{} Completing MFA verification for attempt ID: {}, success: {}, method: {}",
+                LOG_PREFIX, attemptId, mfaSuccess, mfaMethod);
+
+        LoginAttempt loginAttempt = loginAttemptRepository.findById(attemptId)
+                .orElseThrow(() -> new RuntimeException("Login attempt not found"));
+
+        if (mfaSuccess) {
+            loginAttempt.setAttemptSuccess(true);
+            loginAttempt.setAttemptFailureReason(null);
+            log.info("{} MFA verification successful for attempt ID: {}", LOG_PREFIX, attemptId);
+        } else {
+            loginAttempt.setAttemptSuccess(false);
+            loginAttempt.setAttemptFailureReason("MFA verification failed using " + mfaMethod);
+            log.warn("{} MFA verification failed for attempt ID: {}", LOG_PREFIX, attemptId);
+        }
+
+        return create(loginAttempt);
+    }
+
     @Override
     public List<LoginAttemptDTO> getLoginAttemptByAccount() {
         AccountDTO accountDTO = accountService.getAccountAuth();
