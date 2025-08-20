@@ -1,6 +1,8 @@
 package com.infomationsecurity.mfa.service.impl;
 
 import com.infomationsecurity.mfa.dto.request.fiters.TrustDeviceFilter;
+import com.infomationsecurity.mfa.dto.response.ActivityLogDTO;
+import com.infomationsecurity.mfa.dto.response.PageDTO;
 import com.infomationsecurity.mfa.dto.response.TrustDeviceDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
 import com.infomationsecurity.mfa.entity.Account;
@@ -10,7 +12,6 @@ import com.infomationsecurity.mfa.repository.TrustDeviceRepository;
 import com.infomationsecurity.mfa.service.AccountService;
 import com.infomationsecurity.mfa.service.TrustDeviceService;
 import com.infomationsecurity.mfa.specification.TrustDeviceSpecification;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -18,7 +19,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.xml.sax.SAXParseException;
 
 import java.util.Optional;
 
@@ -79,7 +79,7 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
      * @return
      */
     @Override
-    public Page<TrustDeviceDTO> filter(TrustDeviceFilter filter, Integer page, Integer size) {
+    public PageDTO<TrustDeviceDTO> filter(TrustDeviceFilter filter, Integer page, Integer size) {
         log.info("Filtering trust devices with filter: {}, page: {}, size: {}", filter, page, size);
 
         AccountDTO accountDTO = accountService.getAccountAuth();
@@ -90,11 +90,16 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
         Pageable pageable = PageRequest.of(page, size);
 
         Page<TrustDevice> trustDevicePage = trustDeviceRepository.findAll(specification, pageable);
-        if (trustDevicePage.isEmpty()) {
-            log.info("No trust devices found for the given filter.");
-            return Page.empty();
-        }
-        return trustDevicePage.map(trustDeviceMapper::entityToDTO);
+
+        return PageDTO.<TrustDeviceDTO>builder()
+                .content(trustDevicePage.getContent().stream()
+                        .map(trustDeviceMapper::entityToDTO)
+                        .toList())
+                .page(page)
+                .size(size)
+                .totalElements(trustDevicePage.getTotalElements())
+                .totalPages(trustDevicePage.getTotalPages())
+                .build();
     }
 
     private String extractDeviceName(String userAgent) {

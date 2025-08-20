@@ -3,6 +3,7 @@ package com.infomationsecurity.mfa.controller;
 import com.infomationsecurity.mfa.dto.request.fiters.LoginAttemptFilter;
 import com.infomationsecurity.mfa.dto.response.APIResponse;
 import com.infomationsecurity.mfa.dto.response.LoginAttemptDTO;
+import com.infomationsecurity.mfa.dto.response.PageDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -80,12 +81,12 @@ public class LoginAttemptController {
                     )
             }
     )
-    public ResponseEntity<APIResponse<Page<LoginAttemptDTO>>> filterLoginAttempts(
+    public ResponseEntity<APIResponse<PageDTO<LoginAttemptDTO>>> filterLoginAttempts(
             @Parameter(description = "Filter criteria for login attempts") LoginAttemptFilter filter,
             @Parameter(description = "Page number for pagination") Integer page,
             @Parameter(description = "Page size for pagination") Integer size,
             HttpServletRequest request) {
-        Page<LoginAttemptDTO> result = loginAttemptService.filter(filter, page, size);
+        PageDTO<LoginAttemptDTO> result = loginAttemptService.filter(filter, page, size);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new APIResponse<>(true, "Login attempts filtered successfully", result, null, request.getRequestURI()));
     }

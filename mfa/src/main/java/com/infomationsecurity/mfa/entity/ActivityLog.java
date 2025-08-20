@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 public class ActivityLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "account_id")
+    @Column(name = "log_id")
     private Integer activityLogId;
 
     @Column(name = "account_id", nullable = false)

@@ -2,6 +2,7 @@ package com.infomationsecurity.mfa.controller;
 
 import com.infomationsecurity.mfa.dto.request.fiters.TrustDeviceFilter;
 import com.infomationsecurity.mfa.dto.response.APIResponse;
+import com.infomationsecurity.mfa.dto.response.PageDTO;
 import com.infomationsecurity.mfa.dto.response.TrustDeviceDTO;
 import com.infomationsecurity.mfa.service.TrustDeviceService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,7 +41,7 @@ public class TrustDeviceController {
             }
     )
     @GetMapping
-    public ResponseEntity<APIResponse<Page<TrustDeviceDTO>>> filter(
+    public ResponseEntity<APIResponse<PageDTO<TrustDeviceDTO>>> filter(
             @RequestParam(required = false) Integer accountId,
             @RequestParam(required = false) String deviceName,
             @RequestParam(required = false) Boolean deviceIsActive,
@@ -59,7 +60,7 @@ public class TrustDeviceController {
         filter.setFromDate(fromDate);
         filter.setToDate(toDate);
 
-        Page<TrustDeviceDTO> resultPage = trustDeviceService.filter(filter, page, size);
+        PageDTO<TrustDeviceDTO> resultPage = trustDeviceService.filter(filter, page, size);
 
         return ResponseEntity.ok(new APIResponse<>(
                 true,

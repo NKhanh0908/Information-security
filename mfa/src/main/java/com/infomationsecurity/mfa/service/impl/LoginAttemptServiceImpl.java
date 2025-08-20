@@ -2,6 +2,7 @@ package com.infomationsecurity.mfa.service.impl;
 
 import com.infomationsecurity.mfa.dto.request.fiters.LoginAttemptFilter;
 import com.infomationsecurity.mfa.dto.response.LoginAttemptDTO;
+import com.infomationsecurity.mfa.dto.response.PageDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
 import com.infomationsecurity.mfa.entity.Account;
 import com.infomationsecurity.mfa.entity.LoginAttempt;
@@ -120,7 +121,7 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
      * @return
      */
     @Override
-    public Page<LoginAttemptDTO> filter(LoginAttemptFilter filter, Integer page, Integer size) {
+    public PageDTO<LoginAttemptDTO> filter(LoginAttemptFilter filter, Integer page, Integer size) {
         log.info("Filtering login attempts with filter: {}, page: {}, size: {}", filter, page, size);
 
         AccountDTO accountDTO = accountService.getAccountAuth();
@@ -130,6 +131,14 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
 
         Page<LoginAttempt> loginAttemptPage = loginAttemptRepository.findAll(specification, PageRequest.of(page, size));
 
-        return loginAttemptPage.map(loginAttemptMapper::entityToDTO);
+        return PageDTO.<LoginAttemptDTO>builder()
+                .content(loginAttemptPage.getContent().stream()
+                        .map(loginAttemptMapper::entityToDTO)
+                        .toList())
+                .page(page)
+                .size(size)
+                .totalElements(loginAttemptPage.getTotalElements())
+                .totalPages(loginAttemptPage.getTotalPages())
+                .build();
     }
 }

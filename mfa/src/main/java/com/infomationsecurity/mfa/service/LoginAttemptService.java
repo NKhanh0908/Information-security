@@ -2,6 +2,7 @@ package com.infomationsecurity.mfa.service;
 
 import com.infomationsecurity.mfa.dto.request.fiters.LoginAttemptFilter;
 import com.infomationsecurity.mfa.dto.response.LoginAttemptDTO;
+import com.infomationsecurity.mfa.dto.response.PageDTO;
 import com.infomationsecurity.mfa.entity.Account;
 import com.infomationsecurity.mfa.entity.LoginAttempt;
 import com.infomationsecurity.mfa.entity.TrustDevice;
@@ -23,6 +24,6 @@ public interface LoginAttemptService {
 
     List<LoginAttemptDTO> getLoginAttemptByTrustDeviceId(Integer trustDeviceId);
 
-    Page<LoginAttemptDTO> filter(LoginAttemptFilter filter, Integer page, Integer size);
+    PageDTO<LoginAttemptDTO> filter(LoginAttemptFilter filter, Integer page, Integer size);
 
 }

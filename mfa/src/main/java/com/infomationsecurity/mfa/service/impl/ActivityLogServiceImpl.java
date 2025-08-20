@@ -2,6 +2,7 @@ package com.infomationsecurity.mfa.service.impl;
 
 import com.infomationsecurity.mfa.dto.request.fiters.ActivityLogFilter;
 import com.infomationsecurity.mfa.dto.response.ActivityLogDTO;
+import com.infomationsecurity.mfa.dto.response.PageDTO;
 import com.infomationsecurity.mfa.entity.ActivityLog;
 import com.infomationsecurity.mfa.mapper.AccountMapper;
 import com.infomationsecurity.mfa.mapper.ActivityLogMapper;
@@ -53,7 +54,7 @@ public class ActivityLogServiceImpl implements ActivityLogService {
      * @return
      */
     @Override
-    public Page<ActivityLogDTO> getActivityLogs(ActivityLogFilter filter, Integer page, Integer size) {
+    public PageDTO<ActivityLogDTO> getActivityLogs(ActivityLogFilter filter, Integer page, Integer size) {
         log.info("Fetching activity logs with filter: {}, page: {}, size: {}", filter, page, size);
 
         Specification<ActivityLog> activityLogSpecification = ActivityLogSpecification.filter(filter);
@@ -62,6 +63,14 @@ public class ActivityLogServiceImpl implements ActivityLogService {
 
         Page<ActivityLog> activityLogPage = activityLogRepository.findAll(activityLogSpecification, pageable);
 
-        return activityLogPage.map(activityLogMapper::entityToDTO);
+        return PageDTO.<ActivityLogDTO>builder()
+                .content(activityLogPage.getContent().stream()
+                        .map(activityLogMapper::entityToDTO)
+                        .toList())
+                .page(page)
+                .size(size)
+                .totalElements(activityLogPage.getTotalElements())
+                .totalPages(activityLogPage.getTotalPages())
+                .build();
     }
 }

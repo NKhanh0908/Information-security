@@ -3,6 +3,7 @@ package com.infomationsecurity.mfa.controller;
 import com.infomationsecurity.mfa.dto.request.fiters.ActivityLogFilter;
 import com.infomationsecurity.mfa.dto.response.APIResponse;
 import com.infomationsecurity.mfa.dto.response.ActivityLogDTO;
+import com.infomationsecurity.mfa.dto.response.PageDTO;
 import com.infomationsecurity.mfa.service.ActivityLogService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -42,13 +43,13 @@ public class ActivityLogController {
                     )
             }
     )
-    public ResponseEntity<APIResponse<Page<ActivityLogDTO>>> filterActivityLogs(
+    public ResponseEntity<APIResponse<PageDTO<ActivityLogDTO>>> filterActivityLogs(
             @ParameterObject @ModelAttribute ActivityLogFilter filter,
             @Parameter(description = "Page number for pagination") Integer page,
             @Parameter(description = "Page size for pagination") Integer size,
             HttpServletRequest request) {
 
-        Page<ActivityLogDTO> result = activityLogService.getActivityLogs(filter, page, size);
+        PageDTO<ActivityLogDTO> result = activityLogService.getActivityLogs(filter, page, size);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new APIResponse<>(

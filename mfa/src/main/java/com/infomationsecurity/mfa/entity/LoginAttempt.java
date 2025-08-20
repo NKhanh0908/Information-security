@@ -1,5 +1,6 @@
 package com.infomationsecurity.mfa.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,6 +24,7 @@ public class LoginAttempt {
 
     @ManyToOne
     @JoinColumn(name = "account_id", nullable = false)
+    @JsonBackReference
     private Account account;
 
     @ManyToOne

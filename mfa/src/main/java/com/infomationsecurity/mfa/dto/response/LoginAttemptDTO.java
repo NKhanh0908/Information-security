@@ -17,4 +17,6 @@ public class LoginAttemptDTO {
     private String attemptUserAgent;
     private String attemptFailureReason;
     private String attemptCreatedAt;
+    private String trustDeviceName;
+    private String trustDeviceIpAddress;
 }
