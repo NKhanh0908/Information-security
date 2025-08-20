@@ -3,6 +3,18 @@ CREATE DATABASE informationsecurity;
 
 USE informationsecurity;
 
+DROP TABLE IF EXISTS users;
+
+DROP TABLE IF EXISTS account;
+
+DROP TABLE IF EXISTS login_attempt;
+
+DROP TABLE IF EXISTS trust_device;
+
+DROP TABLE IF EXISTS mfa_settings;
+
+DROP TABLE IF EXISTS activity_log;
+
 CREATE TABLE `users` (
     `user_id` INT PRIMARY KEY AUTO_INCREMENT COMMENT "User ID",
     `user_name` VARCHAR(100) NOT NULL COMMENT "Name of the user",
@@ -70,8 +82,8 @@ CREATE TABLE `activity_log`(
     `log_id` INT PRIMARY KEY AUTO_INCREMENT COMMENT "Log ID",
     `account_id` INT NOT NULL COMMENT "Account ID",
     `device_id` INT NOT NULL COMMENT "Device ID",
-    `action` VARCHAR(255) NOT NULL COMMENT "Action performed",
-    `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT "Timestamp of the action"
+    `log_action` VARCHAR(255) NOT NULL COMMENT "Action performed",
+    `log_timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT "Timestamp of the action"
 )
 
 
