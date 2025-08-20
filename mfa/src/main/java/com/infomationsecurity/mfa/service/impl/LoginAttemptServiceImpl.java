@@ -27,6 +27,8 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 @Service
 public class LoginAttemptServiceImpl implements LoginAttemptService {
+    private final String LOG_PREFIX = "[LoginAttemptService]: ";
+
     private final LoginAttemptRepository loginAttemptRepository;
 
     private final LoginAttemptMapper loginAttemptMapper;
@@ -59,7 +61,7 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
     @Transactional
     @Override
     public CompletableFuture<LoginAttemptDTO> saveSuccessfulLoginAttempt(Account account, TrustDevice trustDevice, String userAgent) {
-        log.info("Saving successful login attempt for account ID: {}", account.getAccountId());
+        log.info("{} Saving successful login attempt for account ID: {}", LOG_PREFIX, account.getAccountId());
 
         LoginAttempt loginAttempt = loginAttemptMapper.createSuccessfulLoginAttempt(userAgent);
         loginAttempt.setAccount(account);
@@ -79,7 +81,7 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
     @Transactional
     @Override
     public CompletableFuture<LoginAttemptDTO> saveFailedLoginAttempt(Account account, TrustDevice trustDevice, String userAgent, String failureReason) {
-        log.info("Saving failed login attempt for account ID: {}", account.getAccountId());
+        log.info("{} Saving failed login attempt for account ID: {}, failure reason: {}", LOG_PREFIX, account.getAccountId(), failureReason);
 
         LoginAttempt loginAttempt = loginAttemptMapper.createFailedLoginAttempt(userAgent, failureReason);
         loginAttempt.setAccount(account);
@@ -91,7 +93,7 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
     public List<LoginAttemptDTO> getLoginAttemptByAccount() {
         AccountDTO accountDTO = accountService.getAccountAuth();
 
-        log.info("Retrieving login attempts for account ID: {}", accountDTO.getAccountId());
+        log.info("{} Retrieving login attempts for account ID: {}", LOG_PREFIX, accountDTO.getAccountId());
         return loginAttemptRepository.findByAccount_AccountId(accountDTO.getAccountId())
                 .stream()
                 .map(loginAttemptMapper::entityToDTO)
@@ -104,7 +106,7 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
      */
     @Override
     public List<LoginAttemptDTO> getLoginAttemptByTrustDeviceId(Integer trustDeviceId) {
-    log.info("Retrieving login attempts for trust device ID: {}", trustDeviceId);
+    log.info("{} Retrieving login attempts for trust device ID: {}", LOG_PREFIX, trustDeviceId);
 
     AccountDTO accountDTO = accountService.getAccountAuth();
 
@@ -122,7 +124,7 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
      */
     @Override
     public PageDTO<LoginAttemptDTO> filter(LoginAttemptFilter filter, Integer page, Integer size) {
-        log.info("Filtering login attempts with filter: {}, page: {}, size: {}", filter, page, size);
+        log.info("{} Filtering login attempts with filter: {}, page: {}, size: {}", LOG_PREFIX, filter, page, size);
 
         AccountDTO accountDTO = accountService.getAccountAuth();
         filter.setAccountId(accountDTO.getAccountId());

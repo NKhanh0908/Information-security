@@ -22,6 +22,8 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 @Service
 public class MfaSettingsServiceImpl implements MfaSettingsService {
+    private final String LOG_PREFIX = "[MfaSettingsService]: ";
+
     private final MfaSettingsRepository mfaSettingsRepository;
 
     private final MfaSettingsMapper mfaSettingsMapper;
@@ -42,7 +44,7 @@ public class MfaSettingsServiceImpl implements MfaSettingsService {
     @Async("mfaTaskExecutor")
     @Override
     public CompletableFuture<MfaSettings> create(MfaSettings mfaSettings) {
-        log.info("Creating MFA settings for account ID: {}", mfaSettings.getAccount().getAccountId());
+        log.info("{} Creating MFA settings for account ID: {}", LOG_PREFIX, mfaSettings.getAccount().getAccountId());
 
         return CompletableFuture.completedFuture(mfaSettingsRepository.save(mfaSettings));
     }
@@ -55,8 +57,7 @@ public class MfaSettingsServiceImpl implements MfaSettingsService {
     @Transactional
     @Override
     public void getMfaSettingsByAccountId(AccountDTO accountDTO) {
-        log.info("Retrieving MFA settings for account ID: {}", accountDTO.getAccountId());
-
+        log.info("{} Get MFA settings for account ID: {}", LOG_PREFIX, accountDTO.getAccountId());
 
         MfaSettings mfaSettings = getMfaSettingsByAccount(accountDTO.getAccountId());
         switch (mfaSettings.getMfaPrimaryMethod()) {
@@ -93,7 +94,7 @@ public class MfaSettingsServiceImpl implements MfaSettingsService {
      */
     @Override
     public MfaSettings getMfaSettingsByAccount(Integer accountId) {
-        log.info("Get MFA settings for account ID: {}", accountId);
+    log.info("{} Retrieving MFA settings for account ID: {}", LOG_PREFIX, accountId);
         return mfaSettingsRepository.findMfaSettingsByAccount_AccountId(accountId)
                 .orElseThrow(() -> new CustomException(Error.MFA_SETTINGS_NOT_FOUND));
     }
@@ -103,7 +104,7 @@ public class MfaSettingsServiceImpl implements MfaSettingsService {
      */
     @Override
     public void updateSecretKey(String secretKey) {
-        log.info("Updating secret key for MFA settings");
+        log.info("{} Updating TOTP secret key for account", LOG_PREFIX);
 
         AccountDTO accountDTO = accountService.getAccountAuth();
         MfaSettings mfaSettings = getMfaSettingsByAccount(accountDTO.getAccountId());

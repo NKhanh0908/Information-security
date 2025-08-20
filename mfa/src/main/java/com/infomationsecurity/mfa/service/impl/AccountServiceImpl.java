@@ -39,6 +39,8 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
+    private final String LOG_PREFIX = "[AccountService]:";
+
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenUtil jwtTokenUtil;
 
@@ -46,13 +48,11 @@ public class AccountServiceImpl implements AccountService {
 
     private final AccountMapper accountMapper;
 
-    private final UserService userService;
     private final MfaSettingsService mfaSettingsService;
     private final LoginAttemptService loginAttemptService;
     private final TrustDeviceService trustDeviceService;
     private final LoginAttemptChecked loginAttemptChecked;
     private final OtpService otpService;
-    private final RestTemplate restTemplate;
     private final GithubUtils githubUtils;
     //private final MailService mailService;
 
@@ -75,7 +75,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public AuthenticationDTO signIn(FormLoginDTO formLoginDTO) {
         try {
-            log.info("Attempting to sign in user: {}", formLoginDTO.getUsername());
+            log.info("{} Attempting to sign in user: {}", LOG_PREFIX, formLoginDTO.getUsername());
             String name = formLoginDTO.getUsername().trim().toLowerCase();
 
             Account account = accountRepository.findByAccountUsername(name)
@@ -143,8 +143,7 @@ public class AccountServiceImpl implements AccountService {
      */
     @Override
     public AccountDTO signUp(AccountCreateDTO accountCreateDTO) {
-        log.info("Creating account for username: {}", accountCreateDTO.getUsername());
-
+        log.info("{} Attempting to sign up user: {}", LOG_PREFIX, accountCreateDTO.getUsername());
         User user = new User();
         user.setUserName(accountCreateDTO.getUsername());
         user.setUserGender(accountCreateDTO.getGender());
@@ -180,7 +179,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public AuthenticationDTO authWithGitHub(String authorizationCode) {
         try {
-            log.info("Starting GitHub OAuth2 sign in process");
+            log.info("{} Starting GitHub OAuth2 sign in process with code: {}", LOG_PREFIX, authorizationCode);
 
             ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             String ip = requestAttributes != null ? requestAttributes.getRequest().getRemoteAddr() : "unknown";
@@ -196,42 +195,41 @@ public class AccountServiceImpl implements AccountService {
             Optional<Account> result = accountRepository.findAccountByAccountEmail(githubUserInfo.getEmail());
             // If account does not exist, create a new one
             if(result.isPresent()){
-                log.info("Found existing account for email: {}", githubUserInfo.getEmail());
+                log.info("{} Existing account found for email: {}, proceeding with login", LOG_PREFIX, githubUserInfo.getEmail());
 
                 Account account = result.get();
 
                 if (!account.isAccountNonLocked()) {
-                    log.warn("GitHub OAuth2 login attempt for locked account: {}", account.getAccountUsername());
+                    log.warn("{} Account is locked for email: {}", LOG_PREFIX, githubUserInfo.getEmail());
                     throw new CustomException(Error.ACCOUNT_LOCKED);
                 }
 
                 return processSuccessfulLogin(account, ip, userAgent, account.getAccountUsername());
 
             }else{
-                log.info("No existing account found for email: {}, creating new account", githubUserInfo.getEmail());
+                log.info("{} No existing account found for email: {}, creating new account", LOG_PREFIX, githubUserInfo.getEmail());
                 Account account = createAccountForGithub(authorizationCode);
 
                 return processSuccessfulLogin(account, ip, userAgent, account.getAccountUsername());
 
             }
         } catch (Exception e) {
-            log.error("Error during GitHub sign in: ", e);
+            log.error("{} Error during GitHub sign in: ", LOG_PREFIX, e);
             throw new RuntimeException("GitHub sign in failed", e);
         }
     }
 
     private Account createAccountForGithub(String authorizationCode) {
         try {
-            log.info("Starting GitHub OAuth2 sign up process");
+            log.info("{} Creating new account for GitHub user with authorization code: {}", LOG_PREFIX, authorizationCode);
 
             GitHubUserInfo githubUserInfo = githubUtils.getGithubUserInfo(
                     githubUtils.exchangeGithubCodeForToken(authorizationCode)
             );
 
-            // Check if user already exists
             Optional<Account> existingAccount = accountRepository.findAccountByAccountEmail(githubUserInfo.getEmail());
             if (existingAccount.isPresent()) {
-                log.warn("Account with email {} already exists", githubUserInfo.getEmail());
+                log.warn("{} Account with email {} already exists", LOG_PREFIX, githubUserInfo.getEmail());
                 throw new CustomException(Error.ACCOUNT_EMAIL_ALREADY_EXISTS);
             }
 
@@ -244,7 +242,6 @@ public class AccountServiceImpl implements AccountService {
             mfaSettings.setAccount(savedAccount);
             mfaSettingsService.create(mfaSettings);
 
-            log.info("Successfully created account via GitHub OAuth2: {}", savedAccount.getAccountUsername());
             return savedAccount;
 
         } catch (Exception e) {
@@ -256,13 +253,13 @@ public class AccountServiceImpl implements AccountService {
 
     private AuthenticationDTO processSuccessfulLogin(Account account, String ip, String userAgent, String username) {
         try {
+            log.info("{} Processing successful login for user: {}", LOG_PREFIX, username);
             loginAttemptChecked.loginSucceeded(username);
             account.setAccountLastLogin(LocalDateTime.now());
             AccountDTO accountDTO = accountMapper.entityToDTO(accountRepository.save(account));
 
             TrustDevice trustDevice = trustDeviceService.create(account, ip, userAgent);
             if (!trustDevice.getDeviceIsVerified()) {
-                log.info("Trust device created for account ID: {}", account.getAccountId());
                 mfaSettingsService.getMfaSettingsByAccountId(accountDTO);
             }
             loginAttemptService.saveSuccessfulLoginAttempt(account, trustDevice, userAgent);
@@ -287,14 +284,13 @@ public class AccountServiceImpl implements AccountService {
      */
     @Override
     public AccountDTO getAccountAuth() {
+        log.info("{} Retrieving authenticated user account information", LOG_PREFIX);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new CustomException(Error.UNAUTHORIZED);
         }
 
         Account account = (Account) authentication.getPrincipal();
-
-        log.info("User principal: {}", account);
 
         return accountMapper.entityToDTO(account);
     }
@@ -305,7 +301,7 @@ public class AccountServiceImpl implements AccountService {
      */
     @Override
     public AuthenticationDTO refreshToken(RefreshTokenDTO refreshTokenDTO) {
-        log.info("Refreshing token for user");
+        log.info("{} Refreshing token for user with refresh token", LOG_PREFIX);
         try {
             String refreshToken = refreshTokenDTO.getRefreshToken();
             if (!jwtTokenUtil.isTokenExpired(refreshToken)) {
@@ -324,7 +320,6 @@ public class AccountServiceImpl implements AccountService {
                     .refreshToken(newRefreshToken)
                     .build();
         } catch (Exception e) {
-            log.error("Error processing successful login: ", e);
             throw new RuntimeException("Login processing failed", e);
         }
     }

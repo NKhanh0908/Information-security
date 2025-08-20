@@ -25,6 +25,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 public class TrustDeviceServiceImpl implements TrustDeviceService {
+    private final String LOG_PREFIX = "[TrustDeviceService]: ";
     private final TrustDeviceRepository trustDeviceRepository;
 
     private final TrustDeviceMapper trustDeviceMapper;
@@ -41,14 +42,12 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
 
     @Override
     public TrustDevice create(Account account, String ip, String userAgent) {
-        log.info("Creating trust device for account ID: {}", account.getAccountId());
+        log.info("{} Creating trust device for account ID: {}, IP: {}, User Agent: {}", LOG_PREFIX, account.getAccountId(), ip, userAgent);
 
         Optional<TrustDevice> existingTrustDevice = trustDeviceRepository.findByDeviceIpAddressAndDeviceNameAndDeviceLocation(
                 ip, extractDeviceName(userAgent), getLocationFromIP(ip));
 
         if (existingTrustDevice.isPresent()) {
-            log.info("Trust device already exists for account ID: {}, IP: {}, Device Name: {}, Location: {}",
-                    account.getAccountId(), ip, extractDeviceName(userAgent), getLocationFromIP(ip));
             return existingTrustDevice.get();
         }
 
@@ -80,7 +79,7 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
      */
     @Override
     public PageDTO<TrustDeviceDTO> filter(TrustDeviceFilter filter, Integer page, Integer size) {
-        log.info("Filtering trust devices with filter: {}, page: {}, size: {}", filter, page, size);
+        log.info("{} Filtering trust devices with filter: {}, page: {}, size: {}", LOG_PREFIX, filter, page, size);
 
         AccountDTO accountDTO = accountService.getAccountAuth();
         filter.setAccountId(accountDTO.getAccountId());

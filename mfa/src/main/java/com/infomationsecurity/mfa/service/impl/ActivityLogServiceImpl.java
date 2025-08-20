@@ -22,6 +22,8 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class ActivityLogServiceImpl implements ActivityLogService {
+    private final String LOG_PREFIX = "[ActivityLogService]:";
+
     private final ActivityLogRepository activityLogRepository;
 
     private final ActivityLogMapper activityLogMapper;
@@ -55,7 +57,7 @@ public class ActivityLogServiceImpl implements ActivityLogService {
      */
     @Override
     public PageDTO<ActivityLogDTO> getActivityLogs(ActivityLogFilter filter, Integer page, Integer size) {
-        log.info("Fetching activity logs with filter: {}, page: {}, size: {}", filter, page, size);
+        log.info("{} getActivityLogs with filter: {}, page: {}, size: {}", LOG_PREFIX, filter, page, size);
 
         Specification<ActivityLog> activityLogSpecification = ActivityLogSpecification.filter(filter);
 
