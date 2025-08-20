@@ -66,6 +66,15 @@ CREATE TABLE `mfa_settings`(
     `mfa_updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "MFA settings update timestamp"
 )
 
+CREATE TABLE `activity_log`(
+    `log_id` INT PRIMARY KEY AUTO_INCREMENT COMMENT "Log ID",
+    `account_id` INT NOT NULL COMMENT "Account ID",
+    `device_id` INT NOT NULL COMMENT "Device ID",
+    `action` VARCHAR(255) NOT NULL COMMENT "Action performed",
+    `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT "Timestamp of the action"
+)
+
+
 -- Add foreign key constraints
 ALTER TABLE account ADD CONSTRAINT fk_account_user 
     FOREIGN KEY (user_id) REFERENCES users(user_id);
@@ -78,6 +87,12 @@ ALTER TABLE trust_device ADD CONSTRAINT fk_device_account
 
 ALTER TABLE mfa_settings ADD CONSTRAINT fk_mfa_account 
     FOREIGN KEY (account_id) REFERENCES account(account_id);
+
+ALTER TABLE activity_log ADD CONSTRAINT fk_activity_account 
+    FOREIGN KEY (account_id) REFERENCES account(account_id);
+
+ALTER TABLE activity_log ADD CONSTRAINT fk_activity_device 
+    FOREIGN KEY (device_id) REFERENCES trust_device(device_id);
 
 -- Add indexes
 CREATE INDEX idx_account_username ON account(account_username);
