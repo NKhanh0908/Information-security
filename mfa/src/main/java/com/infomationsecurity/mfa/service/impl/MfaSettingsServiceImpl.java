@@ -1,21 +1,26 @@
 package com.infomationsecurity.mfa.service.impl;
 
+import com.infomationsecurity.mfa.dto.other.RequestInfo;
+import com.infomationsecurity.mfa.dto.request.accountDTO.VerifyDeviceWithTOTP;
 import com.infomationsecurity.mfa.dto.response.MfaSettingsDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
+import com.infomationsecurity.mfa.dto.response.accountDTO.AuthenticationDTO;
+import com.infomationsecurity.mfa.entity.Account;
 import com.infomationsecurity.mfa.entity.MfaSettings;
+import com.infomationsecurity.mfa.entity.TrustDevice;
 import com.infomationsecurity.mfa.enums.MfaMethod;
 import com.infomationsecurity.mfa.exception.CustomException;
 import com.infomationsecurity.mfa.exception.Error;
 import com.infomationsecurity.mfa.mapper.MfaSettingsMapper;
 import com.infomationsecurity.mfa.repository.MfaSettingsRepository;
-import com.infomationsecurity.mfa.service.AccountService;
-import com.infomationsecurity.mfa.service.MfaSettingsService;
-import com.infomationsecurity.mfa.service.TOTPService;
+import com.infomationsecurity.mfa.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -30,15 +35,21 @@ public class MfaSettingsServiceImpl implements MfaSettingsService {
 
     private final TOTPService totpService;
     private final AccountService accountService;
+    private final TrustDeviceService trustDeviceService;
+    private final AuthenticationService authenticationService;
 
     public MfaSettingsServiceImpl(MfaSettingsRepository mfaSettingsRepository,
                                   MfaSettingsMapper mfaSettingsMapper,
                                   TOTPService totpService,
-                                  @Lazy AccountService accountService) {
+                                  @Lazy AccountService accountService,
+                                  TrustDeviceService trustDeviceService,
+                                  @Lazy AuthenticationService authenticationService) {
         this.mfaSettingsRepository = mfaSettingsRepository;
         this.mfaSettingsMapper = mfaSettingsMapper;
         this.totpService = totpService;
         this.accountService = accountService;
+        this.trustDeviceService = trustDeviceService;
+        this.authenticationService = authenticationService;
     }
 
     @Async("mfaTaskExecutor")
@@ -56,35 +67,37 @@ public class MfaSettingsServiceImpl implements MfaSettingsService {
 
     @Transactional
     @Override
-    public void getMfaSettingsByAccountId(AccountDTO accountDTO) {
-        log.info("{} Get MFA settings for account ID: {}", LOG_PREFIX, accountDTO.getAccountId());
+    public MfaSettingsDTO getMfaSettingsByAccountId(Integer accountId) {
+        log.info("{} Get MFA settings for account ID: {}", LOG_PREFIX, accountId);
 
-        MfaSettings mfaSettings = getMfaSettingsByAccount(accountDTO.getAccountId());
+        MfaSettings mfaSettings = getMfaSettingsByAccount(accountId);
         switch (mfaSettings.getMfaPrimaryMethod()) {
             case MfaMethod.EMAIL:
-                log.info("MFA settings for account ID {}: Email method", accountDTO.getAccountId());
+                log.info("MFA settings for account ID {}: Email method", accountId);
                 // TODO: Implement logic for email MFA settings
                 break;
             case MfaMethod.TOTP:
-                log.info("MFA settings for account ID {}: TOTP method", accountDTO.getAccountId());
+                log.info("MFA settings for account ID {}: TOTP method", accountId);
                 // TODO: Implement logic for TOTP MFA settings
                 break;
             case MfaMethod.AUTHENTICATOR_APP:
-                log.info("MFA settings for account ID {}: Authenticator App method", accountDTO.getAccountId());
+                log.info("MFA settings for account ID {}: Authenticator App method", accountId);
                 // TODO: Implement logic for Authenticator App MFA settings
                 break;
             case MfaMethod.WEBAUTHN:
-                log.info("MFA settings for account ID {}: WebAuthn method", accountDTO.getAccountId());
+                log.info("MFA settings for account ID {}: WebAuthn method", accountId);
                 // TODO: Implement logic for WebAuthn MFA settings
                 break;
             case MfaMethod.BACKUP_CODES:
-                log.info("MFA settings for account ID {}: Backup Codes method", accountDTO.getAccountId());
+                log.info("MFA settings for account ID {}: Backup Codes method", accountId);
                 // TODO: Implement logic for Backup Codes MFA settings
                 break;
             default:
                 log.error("Unsupported MFA type: {}", mfaSettings.getMfaBackupMethod());
                 throw new CustomException(Error.MFA_METHOD_NOT_SUPPORTED);
         }
+
+        return mfaSettingsMapper.entityToDTO(mfaSettings);
     }
 
     /**
@@ -100,6 +113,34 @@ public class MfaSettingsServiceImpl implements MfaSettingsService {
     }
 
     /**
+     * @param verifyDeviceWithTOTP
+     * @return
+     */
+    @Override
+    public AuthenticationDTO verifyLoginWithTOTP(VerifyDeviceWithTOTP verifyDeviceWithTOTP) {
+        log.info("{} Verifying login with TOTP for user", LOG_PREFIX);
+
+        Account account = accountService.getAccountByUsername(verifyDeviceWithTOTP.getUsername());
+
+        String totpCode = getTotpSecretKey(account.getAccountId());
+
+        Boolean isValid = totpService.verifyTOTP(verifyDeviceWithTOTP.getTotpVerificationDTO().getCode(), totpCode);
+
+        if (isValid) {
+            log.info("{} TOTP verification successful for user: {}", LOG_PREFIX, account.getAccountUsername());
+
+            trustDeviceService.updateStatus(verifyDeviceWithTOTP.getDeviceId(), true, true);
+
+            RequestInfo requestInfo = extractRequestInfo();
+
+            return authenticationService.processSuccessfulLogin(account, requestInfo, account.getAccountUsername());
+        } else {
+            log.warn("{} TOTP verification failed for user: {}", LOG_PREFIX, account.getAccountUsername());
+            throw new CustomException(Error.TOTP_VERIFICATION_FAILED);
+        }
+    }
+
+    /**
      * @param secretKey
      */
     @Override
@@ -112,4 +153,38 @@ public class MfaSettingsServiceImpl implements MfaSettingsService {
         mfaSettings.setMfaTotpSecretKey(secretKey);
         mfaSettingsRepository.save(mfaSettings);
     }
+
+    /**
+     * @param accountId
+     * @return
+     */
+    @Override
+    public String getTotpSecretKey(Integer accountId) {
+        return mfaSettingsRepository.findTotpSecretKeyByAccount_AccountId(accountId);
+    }
+
+
+    @Override
+    public RequestInfo extractRequestInfo() {
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        String ip = requestAttributes != null ? requestAttributes.getRequest().getRemoteAddr() : "unknown";
+        String userAgent = requestAttributes != null ? requestAttributes.getRequest().getHeader("User-Agent") : "unknown";
+        return RequestInfo.builder()
+                .ip(ip)
+                .userAgent(userAgent)
+                .build();
+    }
+
+    private AuthenticationDTO createMfaRequiredResponse(Account account,TrustDevice trustDevice, MfaSettingsDTO mfaSettingsDTO) {
+        return AuthenticationDTO.builder()
+                .token(null) // No token until MFA is completed
+                .refreshToken(null)
+                .mfaRequired(true)
+                .deviceId(trustDevice.getDeviceId())
+                .message("MFA verification required for this device")
+                .mfaMethod(mfaSettingsDTO.getMfaPrimaryMethod())
+                .username(account.getAccountUsername())
+                .build();
+    }
+
 }

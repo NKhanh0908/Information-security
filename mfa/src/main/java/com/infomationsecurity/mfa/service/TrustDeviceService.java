@@ -1,5 +1,6 @@
 package com.infomationsecurity.mfa.service;
 
+import com.infomationsecurity.mfa.dto.other.RequestInfo;
 import com.infomationsecurity.mfa.dto.request.fiters.TrustDeviceFilter;
 import com.infomationsecurity.mfa.dto.response.PageDTO;
 import com.infomationsecurity.mfa.dto.response.deviceDTO.TrustDeviceDTO;
@@ -14,6 +15,10 @@ public interface TrustDeviceService {
     TrustDeviceDTO update(TrustDevice trustDevice);
 
     TrustDeviceDTO getTrustDeviceByAccount();
+
+    void updateStatus(Integer trustDeviceId, Boolean statusVerified, Boolean statusActive);
+
+    TrustDevice createOrGetTrustDevice(Account account, RequestInfo requestInfo);
 
     PageDTO<TrustDeviceDTO> filter(TrustDeviceFilter filter, Integer page, Integer size);
 }

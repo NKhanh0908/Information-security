@@ -5,6 +5,7 @@ import lombok.Data;
 
 @Data
 public class VerifyDeviceWithTOTP {
+    private String username;
     private Integer deviceId;
     private TOTPVerificationDTO totpVerificationDTO;
 }

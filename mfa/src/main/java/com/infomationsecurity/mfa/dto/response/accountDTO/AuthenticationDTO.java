@@ -16,6 +16,7 @@ public class AuthenticationDTO {
     // MFA related fields
     private Boolean mfaRequired = false;
     private Integer deviceId;
+    private String username;
     private String message;
 
     // Optional: MFA challenge details

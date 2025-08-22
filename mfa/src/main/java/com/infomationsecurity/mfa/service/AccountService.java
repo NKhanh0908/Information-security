@@ -1,5 +1,6 @@
 package com.infomationsecurity.mfa.service;
 
+import com.infomationsecurity.mfa.dto.other.GitHubUserInfo;
 import com.infomationsecurity.mfa.dto.request.accountDTO.AccountCreateDTO;
 import com.infomationsecurity.mfa.dto.request.accountDTO.FormLoginDTO;
 import com.infomationsecurity.mfa.dto.request.accountDTO.RefreshTokenDTO;
@@ -7,21 +8,29 @@ import com.infomationsecurity.mfa.dto.request.accountDTO.VerifyDeviceWithTOTP;
 import com.infomationsecurity.mfa.dto.request.totpDTO.TOTPVerificationDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AuthenticationDTO;
+import com.infomationsecurity.mfa.entity.Account;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public interface AccountService {
-    AuthenticationDTO signIn(FormLoginDTO formLoginDTO);
 
     AccountDTO signUp(AccountCreateDTO accountCreateDTO);
 
     AccountDTO signUpWithGoogle();
 
-    AuthenticationDTO authWithGitHub(String authorizationCode);
-
     AccountDTO getAccountAuth();
 
-    AuthenticationDTO refreshToken(RefreshTokenDTO refreshTokenDTO);
+    Account getAccountByUsername(String username);
+
+    Account createGitHubAccount(GitHubUserInfo githubUserInfo);
+
+    Optional<Account> getAccountByEmail(String email);
+
+    void lockAccount(Account account);
+
+    void updateLastLoginTime(Account account);
 
     //ForgotPasswordResponseDTO forgotPassword(String email);
 
@@ -29,5 +38,4 @@ public interface AccountService {
 
     //String resetPassword(ResetPasswordDTO resetPasswordDTO);
 
-    AuthenticationDTO verifyLoginWithTOTP(VerifyDeviceWithTOTP verifyDeviceWithTOTP);
 }

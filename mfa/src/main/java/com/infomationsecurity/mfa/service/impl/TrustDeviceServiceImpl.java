@@ -1,5 +1,6 @@
 package com.infomationsecurity.mfa.service.impl;
 
+import com.infomationsecurity.mfa.dto.other.RequestInfo;
 import com.infomationsecurity.mfa.dto.request.fiters.TrustDeviceFilter;
 import com.infomationsecurity.mfa.dto.response.PageDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
@@ -45,7 +46,7 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
 
         DeviceInfo deviceInfo = createDeviceInfo(ip, userAgent);
 
-        Optional<TrustDevice> existingDevice = findExistingTrustDevice(deviceInfo);
+        Optional<TrustDevice> existingDevice = findExistingTrustDevice(deviceInfo, account.getAccountId());
         if (existingDevice.isPresent()) {
             log.info("{} Found existing trust device for IP: {}", LOG_PREFIX, ip);
             return existingDevice.get();
@@ -67,6 +68,26 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
         return null;
     }
 
+    /**
+     * @param trustDeviceId
+     * @param statusVerified
+     * @param statusActive
+     */
+    @Override
+    public void updateStatus(Integer trustDeviceId, Boolean statusVerified, Boolean statusActive) {
+        log.info("{} Updating trust device status for ID: {}, Verified: {}, Active: {}",
+                LOG_PREFIX, trustDeviceId, statusVerified, statusActive);
+
+        TrustDevice trustDevice = getTrustDeviceById(trustDeviceId);
+        if (statusVerified != null) {
+            trustDevice.setDeviceIsVerified(statusVerified);
+        }
+        if (statusActive != null) {
+            trustDevice.setDeviceIsActive(statusActive);
+        }
+        trustDeviceRepository.save(trustDevice);
+    }
+
     @Override
     public PageDTO<TrustDeviceDTO> filter(TrustDeviceFilter filter, Integer page, Integer size) {
         log.info("{} Filtering trust devices with filter: {}, page: {}, size: {}", LOG_PREFIX, filter, page, size);
@@ -81,7 +102,17 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
         return buildPageDTO(trustDevicePage, page, size);
     }
 
+    @Override
+    public TrustDevice createOrGetTrustDevice(Account account, RequestInfo requestInfo) {
+        return create(account, requestInfo.getIp(), requestInfo.getUserAgent());
+    }
+
     // =============== PRIVATE HELPER METHODS ===============
+
+    private TrustDevice getTrustDeviceById(Integer trustDeviceId) {
+        return trustDeviceRepository.findById(trustDeviceId)
+                .orElseThrow(() -> new RuntimeException("TrustDevice not found with ID: " + trustDeviceId));
+    }
 
     private DeviceInfo createDeviceInfo(String ip, String userAgent) {
         String deviceName = extractDeviceName(userAgent);
@@ -89,11 +120,12 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
         return new DeviceInfo(ip, deviceName, location);
     }
 
-    private Optional<TrustDevice> findExistingTrustDevice(DeviceInfo deviceInfo) {
+    private Optional<TrustDevice> findExistingTrustDevice(DeviceInfo deviceInfo, Integer accountId) {
         return trustDeviceRepository.findByDeviceIpAddressAndDeviceNameAndDeviceLocation(
                 deviceInfo.getIp(),
                 deviceInfo.getDeviceName(),
-                deviceInfo.getLocation()
+                deviceInfo.getLocation(),
+                accountId
         );
     }
 
