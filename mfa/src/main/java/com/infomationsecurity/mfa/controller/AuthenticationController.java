@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
-    @PostMapping("/auth/github")
+    @PostMapping("/github")
     @Operation(
             summary = "Sign In with GitHub",
             description = "Authenticate user using GitHub OAuth2 and return access information",

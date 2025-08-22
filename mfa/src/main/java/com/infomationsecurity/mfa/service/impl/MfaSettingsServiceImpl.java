@@ -37,19 +37,22 @@ public class MfaSettingsServiceImpl implements MfaSettingsService {
     private final AccountService accountService;
     private final TrustDeviceService trustDeviceService;
     private final AuthenticationService authenticationService;
+    private final TokenService tokenService;
 
     public MfaSettingsServiceImpl(MfaSettingsRepository mfaSettingsRepository,
                                   MfaSettingsMapper mfaSettingsMapper,
                                   TOTPService totpService,
                                   @Lazy AccountService accountService,
                                   TrustDeviceService trustDeviceService,
-                                  @Lazy AuthenticationService authenticationService) {
+                                  @Lazy AuthenticationService authenticationService,
+                                  @Lazy TokenService tokenService) {
         this.mfaSettingsRepository = mfaSettingsRepository;
         this.mfaSettingsMapper = mfaSettingsMapper;
         this.totpService = totpService;
         this.accountService = accountService;
         this.trustDeviceService = trustDeviceService;
         this.authenticationService = authenticationService;
+        this.tokenService = tokenService;
     }
 
     @Async("mfaTaskExecutor")
@@ -131,12 +134,14 @@ public class MfaSettingsServiceImpl implements MfaSettingsService {
 
             trustDeviceService.updateStatus(verifyDeviceWithTOTP.getDeviceId(), true, true);
 
-            RequestInfo requestInfo = extractRequestInfo();
-
-            return authenticationService.processSuccessfulLogin(account, requestInfo, account.getAccountUsername());
+            return tokenService.generateTokens(account);
         } else {
             log.warn("{} TOTP verification failed for user: {}", LOG_PREFIX, account.getAccountUsername());
-            throw new CustomException(Error.TOTP_VERIFICATION_FAILED);
+            return createMfaRequiredResponse(
+                    account.getAccountUsername(),
+                    verifyDeviceWithTOTP.getDeviceId(),
+                    "Invalid TOTP code. Please try again."
+            );
         }
     }
 
@@ -175,15 +180,14 @@ public class MfaSettingsServiceImpl implements MfaSettingsService {
                 .build();
     }
 
-    private AuthenticationDTO createMfaRequiredResponse(Account account,TrustDevice trustDevice, MfaSettingsDTO mfaSettingsDTO) {
+    private AuthenticationDTO createMfaRequiredResponse(String username,Integer deviceId, String message) {
         return AuthenticationDTO.builder()
-                .token(null) // No token until MFA is completed
+                .token(null)
                 .refreshToken(null)
                 .mfaRequired(true)
-                .deviceId(trustDevice.getDeviceId())
-                .message("MFA verification required for this device")
-                .mfaMethod(mfaSettingsDTO.getMfaPrimaryMethod())
-                .username(account.getAccountUsername())
+                .deviceId(deviceId)
+                .message(message)
+                .username(username)
                 .build();
     }
 

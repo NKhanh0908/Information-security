@@ -48,6 +48,14 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public AccountDTO signUp(AccountCreateDTO accountCreateDTO) {
         log.info("{} Attempting to sign up user: {}", LOG_PREFIX, accountCreateDTO.getUsername());
+        if(usernameExists(accountCreateDTO.getUsername())){
+            log.warn("{} Username {} already exists", LOG_PREFIX, accountCreateDTO.getUsername());
+            throw new CustomException(Error.ACCOUNT_USERNAME_ALREADY_EXISTS);
+        }
+        if(getAccountByEmail(accountCreateDTO.getEmail()).isPresent()){
+            log.warn("{} Email {} already exists", LOG_PREFIX, accountCreateDTO.getEmail());
+            throw new CustomException(Error.ACCOUNT_EMAIL_ALREADY_EXISTS);
+        }
 
         User user = createUser(accountCreateDTO);
         Account account = createAccount(accountCreateDTO, user);

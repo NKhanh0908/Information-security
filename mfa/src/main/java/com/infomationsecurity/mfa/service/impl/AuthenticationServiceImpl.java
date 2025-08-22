@@ -173,16 +173,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             return false;
         }
 
-        if (!trustDevice.getDeviceIsVerified()) {
+        MfaSettings mfaSettings = mfaSettingsService.getMfaSettingsByAccount(account.getAccountId());
+
+        if (!trustDevice.getDeviceIsVerified() && mfaSettings.getMfaEnabled()) {
             log.info("{} Device is already verified: {}", LOG_PREFIX, trustDevice.getDeviceName());
             return false;
         }
 
-        MfaSettings mfaSettings = mfaSettingsService.getMfaSettingsByAccount(account.getAccountId());
-        if (mfaSettings.getMfaEnabled()) {
-            log.info("{} MFA is disabled for account: {}", LOG_PREFIX, account.getAccountId());
-            return false;
-        }
+//        if (mfaSettings.getMfaEnabled()) {
+//            log.info("{} MFA is disabled for account: {}", LOG_PREFIX, account.getAccountId());
+//            return false;
+//        }
 
         log.info("{} MFA verification required for unverified device: {}",
                 LOG_PREFIX, trustDevice.getDeviceName());
