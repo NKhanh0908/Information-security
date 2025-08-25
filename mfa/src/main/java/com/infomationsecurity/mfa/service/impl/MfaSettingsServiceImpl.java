@@ -38,6 +38,7 @@ public class MfaSettingsServiceImpl implements MfaSettingsService {
     private final TrustDeviceService trustDeviceService;
     private final AuthenticationService authenticationService;
     private final TokenService tokenService;
+    private final ActivityLogService activityLogService;
 
     public MfaSettingsServiceImpl(MfaSettingsRepository mfaSettingsRepository,
                                   MfaSettingsMapper mfaSettingsMapper,
@@ -45,7 +46,8 @@ public class MfaSettingsServiceImpl implements MfaSettingsService {
                                   @Lazy AccountService accountService,
                                   TrustDeviceService trustDeviceService,
                                   @Lazy AuthenticationService authenticationService,
-                                  @Lazy TokenService tokenService) {
+                                  @Lazy TokenService tokenService,
+                                  ActivityLogService activityLogService) {
         this.mfaSettingsRepository = mfaSettingsRepository;
         this.mfaSettingsMapper = mfaSettingsMapper;
         this.totpService = totpService;
@@ -53,6 +55,7 @@ public class MfaSettingsServiceImpl implements MfaSettingsService {
         this.trustDeviceService = trustDeviceService;
         this.authenticationService = authenticationService;
         this.tokenService = tokenService;
+        this.activityLogService = activityLogService;
     }
 
     @Async("mfaTaskExecutor")
@@ -132,7 +135,15 @@ public class MfaSettingsServiceImpl implements MfaSettingsService {
         if (isValid) {
             log.info("{} TOTP verification successful for user: {}", LOG_PREFIX, account.getAccountUsername());
 
-            trustDeviceService.updateStatus(verifyDeviceWithTOTP.getDeviceId(), true, true);
+            TrustDevice trustDevice = trustDeviceService.getTrustDeviceById(verifyDeviceWithTOTP.getDeviceId());
+
+            activityLogService.createActivityLog(
+                    account.getAccountId(),
+                    trustDevice,
+                    "You have successfully logged in using TOTP verification for new device."
+            );
+
+            trustDeviceService.updateStatus(trustDevice, true, true);
 
             return tokenService.generateTokens(account);
         } else {

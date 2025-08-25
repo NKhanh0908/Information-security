@@ -4,6 +4,7 @@ import com.infomationsecurity.mfa.dto.request.fiters.ActivityLogFilter;
 import com.infomationsecurity.mfa.dto.response.ActivityLogDTO;
 import com.infomationsecurity.mfa.dto.response.PageDTO;
 import com.infomationsecurity.mfa.entity.ActivityLog;
+import com.infomationsecurity.mfa.entity.TrustDevice;
 import com.infomationsecurity.mfa.mapper.AccountMapper;
 import com.infomationsecurity.mfa.mapper.ActivityLogMapper;
 import com.infomationsecurity.mfa.repository.AccountRepository;
@@ -28,25 +29,22 @@ public class ActivityLogServiceImpl implements ActivityLogService {
 
     private final ActivityLogMapper activityLogMapper;
 
-    private final AccountService accountService;
-
     public ActivityLogServiceImpl(ActivityLogRepository activityLogRepository,
-                                  ActivityLogMapper activityLogMapper,
-                                  @Lazy AccountService accountService) {
+                                  ActivityLogMapper activityLogMapper) {
         this.activityLogRepository = activityLogRepository;
         this.activityLogMapper = activityLogMapper;
-        this.accountService = accountService;
     }
 
 
     /**
      * @param accountId
-     * @param deviceId
+     * @param trustDevice
      * @param logAction
      */
     @Override
-    public void createActivityLog(Integer accountId, Integer deviceId, String logAction) {
-
+    public void createActivityLog(Integer accountId, TrustDevice trustDevice, String logAction) {
+        ActivityLog activityLog = activityLogMapper.toEntity(accountId, trustDevice, logAction);
+        activityLogRepository.save(activityLog);
     }
 
     /**

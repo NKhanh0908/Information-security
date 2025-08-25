@@ -16,7 +16,9 @@ public interface TrustDeviceService {
 
     TrustDeviceDTO getTrustDeviceByAccount();
 
-    void updateStatus(Integer trustDeviceId, Boolean statusVerified, Boolean statusActive);
+    TrustDevice getTrustDeviceById(Integer trustDeviceId);
+
+    void updateStatus(TrustDevice trustDevice, Boolean statusVerified, Boolean statusActive);
 
     TrustDevice createOrGetTrustDevice(Account account, RequestInfo requestInfo);
 

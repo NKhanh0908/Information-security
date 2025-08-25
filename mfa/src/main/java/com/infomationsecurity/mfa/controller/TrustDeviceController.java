@@ -41,23 +41,10 @@ public class TrustDeviceController {
     )
     @GetMapping
     public ResponseEntity<APIResponse<PageDTO<TrustDeviceDTO>>> filter(
-            @RequestParam(required = false) Integer accountId,
-            @RequestParam(required = false) String deviceName,
-            @RequestParam(required = false) Boolean deviceIsActive,
-            @RequestParam(required = false) Boolean deviceIsVerified,
-            @RequestParam(required = false) LocalDateTime fromDate,
-            @RequestParam(required = false) LocalDateTime toDate,
+            @RequestParam(required = false) TrustDeviceFilter filter,
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
             HttpServletRequest request) {
-
-        TrustDeviceFilter filter = new TrustDeviceFilter();
-        filter.setAccountId(accountId);
-        filter.setDeviceName(deviceName);
-        filter.setDeviceIsActive(deviceIsActive);
-        filter.setDeviceIsVerified(deviceIsVerified);
-        filter.setFromDate(fromDate);
-        filter.setToDate(toDate);
 
         PageDTO<TrustDeviceDTO> resultPage = trustDeviceService.filter(filter, page, size);
 

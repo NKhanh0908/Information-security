@@ -69,16 +69,15 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
     }
 
     /**
-     * @param trustDeviceId
+     * @param trustDevice
      * @param statusVerified
      * @param statusActive
      */
     @Override
-    public void updateStatus(Integer trustDeviceId, Boolean statusVerified, Boolean statusActive) {
+    public void updateStatus(TrustDevice trustDevice, Boolean statusVerified, Boolean statusActive) {
         log.info("{} Updating trust device status for ID: {}, Verified: {}, Active: {}",
-                LOG_PREFIX, trustDeviceId, statusVerified, statusActive);
+                LOG_PREFIX, trustDevice.getDeviceId(), statusVerified, statusActive);
 
-        TrustDevice trustDevice = getTrustDeviceById(trustDeviceId);
         if (statusVerified != null) {
             trustDevice.setDeviceIsVerified(statusVerified);
         }
@@ -107,12 +106,13 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
         return create(account, requestInfo.getIp(), requestInfo.getUserAgent());
     }
 
-    // =============== PRIVATE HELPER METHODS ===============
-
-    private TrustDevice getTrustDeviceById(Integer trustDeviceId) {
+    @Override
+    public TrustDevice getTrustDeviceById(Integer trustDeviceId) {
         return trustDeviceRepository.findById(trustDeviceId)
                 .orElseThrow(() -> new RuntimeException("TrustDevice not found with ID: " + trustDeviceId));
     }
+
+    // =============== PRIVATE HELPER METHODS ===============
 
     private DeviceInfo createDeviceInfo(String ip, String userAgent) {
         String deviceName = extractDeviceName(userAgent);
