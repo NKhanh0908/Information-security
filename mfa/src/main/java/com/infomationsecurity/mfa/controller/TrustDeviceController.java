@@ -10,11 +10,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 
@@ -41,19 +39,19 @@ public class TrustDeviceController {
     )
     @GetMapping
     public ResponseEntity<APIResponse<PageDTO<TrustDeviceDTO>>> filter(
-            @RequestParam(required = false) TrustDeviceFilter filter,
+            @ParameterObject @ModelAttribute TrustDeviceFilter filter,
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
             HttpServletRequest request) {
 
         PageDTO<TrustDeviceDTO> resultPage = trustDeviceService.filter(filter, page, size);
-
         return ResponseEntity.ok(new APIResponse<>(
                 true,
-                "Trust devices retrieved successfully",
+                "Filter trust devices successfully",
                 resultPage,
                 null,
                 request.getRequestURI()
         ));
     }
+
 }

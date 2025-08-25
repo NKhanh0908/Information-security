@@ -92,6 +92,7 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
         log.info("{} Filtering trust devices with filter: {}, page: {}, size: {}", LOG_PREFIX, filter, page, size);
 
         AccountDTO accountDTO = accountService.getAccountAuth();
+        log.info("{} Account DTO: {}", LOG_PREFIX, accountDTO);
         filter.setAccountId(accountDTO.getAccountId());
 
         Specification<TrustDevice> specification = TrustDeviceSpecification.filter(filter);

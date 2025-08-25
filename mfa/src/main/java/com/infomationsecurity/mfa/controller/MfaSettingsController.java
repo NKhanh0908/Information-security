@@ -2,6 +2,7 @@ package com.infomationsecurity.mfa.controller;
 
 import com.infomationsecurity.mfa.dto.request.accountDTO.VerifyDeviceWithTOTP;
 import com.infomationsecurity.mfa.dto.response.APIResponse;
+import com.infomationsecurity.mfa.dto.response.MfaSettingsDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AuthenticationDTO;
 import com.infomationsecurity.mfa.service.MfaSettingsService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,10 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/mfa-settings")
@@ -23,6 +21,32 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Login attempt Controller", description = "List and manage login attempts")
 public class MfaSettingsController {
     private final MfaSettingsService mfaSettingsService;
+
+    @GetMapping
+    @Operation(
+            summary = "Get MFA settings",
+            description = "Retrieve MFA settings for the authenticated user",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "MFA settings retrieved successfully",
+                            content = @Content(schema = @Schema(implementation = AuthenticationDTO.class))
+                    ),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Account not found"),
+                    @ApiResponse(responseCode = "404", description = "MFA settings not found")
+            }
+    )
+    public ResponseEntity<APIResponse<MfaSettingsDTO>> getMfaSettings(HttpServletRequest request) {
+        MfaSettingsDTO mfaSettingsDTO = mfaSettingsService.getMfaSetting();
+
+        return ResponseEntity.ok(new APIResponse<>(
+                true,
+                "MFA settings retrieved successfully",
+                mfaSettingsDTO,
+                null,
+                request.getRequestURI()
+        ));
+    }
 
     @PostMapping("/verify-totp")
     @Operation(

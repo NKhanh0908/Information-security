@@ -12,13 +12,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import com.infomationsecurity.mfa.service.LoginAttemptService;
 
 import java.util.List;
@@ -82,7 +80,7 @@ public class LoginAttemptController {
             }
     )
     public ResponseEntity<APIResponse<PageDTO<LoginAttemptDTO>>> filterLoginAttempts(
-            @Parameter(description = "Filter criteria for login attempts") LoginAttemptFilter filter,
+            @ParameterObject @ModelAttribute LoginAttemptFilter filter,
             @Parameter(description = "Page number for pagination") Integer page,
             @Parameter(description = "Page size for pagination") Integer size,
             HttpServletRequest request) {
