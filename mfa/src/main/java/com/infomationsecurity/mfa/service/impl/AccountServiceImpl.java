@@ -1,21 +1,13 @@
 package com.infomationsecurity.mfa.service.impl;
 
 import com.infomationsecurity.mfa.dto.other.GitHubUserInfo;
-import com.infomationsecurity.mfa.dto.other.RequestInfo;
 import com.infomationsecurity.mfa.dto.request.accountDTO.AccountCreateDTO;
-import com.infomationsecurity.mfa.dto.request.accountDTO.FormLoginDTO;
-import com.infomationsecurity.mfa.dto.request.accountDTO.VerifyDeviceWithTOTP;
-import com.infomationsecurity.mfa.dto.response.MfaSettingsDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
-import com.infomationsecurity.mfa.dto.response.accountDTO.AuthenticationDTO;
 import com.infomationsecurity.mfa.entity.*;
 import com.infomationsecurity.mfa.exception.CustomException;
 import com.infomationsecurity.mfa.mapper.AccountMapper;
 import com.infomationsecurity.mfa.repository.AccountRepository;
 import com.infomationsecurity.mfa.service.*;
-import com.infomationsecurity.mfa.util.GithubUtils;
-import com.infomationsecurity.mfa.util.LoginAttemptChecked;
-import com.infomationsecurity.mfa.util.OtpService;
 import com.infomationsecurity.mfa.exception.Error;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,8 +15,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -44,6 +34,7 @@ public class AccountServiceImpl implements AccountService {
 
     private final MfaSettingsService mfaSettingsService;
     private final TOTPService totpService;
+    private final MailService mailService;
 
     @Override
     public AccountDTO signUp(AccountCreateDTO accountCreateDTO) {
@@ -61,7 +52,7 @@ public class AccountServiceImpl implements AccountService {
         Account account = createAccount(accountCreateDTO, user);
         Account savedAccount = accountRepository.save(account);
 
-        createMfaSettings(savedAccount);
+        mailService.sendVerificationOTPEmail(account.getAccountEmail());
 
         return accountMapper.entityToDTO(savedAccount);
     }
