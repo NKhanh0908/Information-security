@@ -95,7 +95,7 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
         log.info("AccountID: {}", accountDTO.getAccountId());
         filter.setAccountId(accountDTO.getAccountId());
 
-        log.info("filters: {}", filter);
+        log.info("filters: {}", filter.toString());
 
         Specification<TrustDevice> specification = TrustDeviceSpecification.filter(filter);
         Pageable pageable = PageRequest.of(page, size);

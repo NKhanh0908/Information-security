@@ -18,9 +18,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.infomationsecurity.mfa.service.LoginAttemptService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -28,67 +30,57 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Login attempt Controller", description = "List and manage login attempts")
 public class LoginAttemptController {
-    private final LoginAttemptService loginAttemptService;
+        private final LoginAttemptService loginAttemptService;
 
-    @GetMapping
-    @Operation(
-            summary = "Get login attempts by account",
-            description = "Retrieve a list of login attempts associated with the current account",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "Login attempts retrieved successfully",
-                            content = @Content(schema = @Schema(implementation = LoginAttemptDTO.class))
-                    )
-            }
-    )
-    public ResponseEntity<APIResponse<List<LoginAttemptDTO>>> getLoginAttemptByAccount(HttpServletRequest request) {
-        List<LoginAttemptDTO> result = loginAttemptService.getLoginAttemptByAccount();
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(new APIResponse<>(true, "Login attempts retrieved successfully", result, null, request.getRequestURI()));
-    }
+        @GetMapping
+        @Operation(summary = "Get login attempts by account", description = "Retrieve a list of login attempts associated with the current account", responses = {
+                        @ApiResponse(responseCode = "200", description = "Login attempts retrieved successfully", content = @Content(schema = @Schema(implementation = LoginAttemptDTO.class)))
+        })
+        public ResponseEntity<APIResponse<List<LoginAttemptDTO>>> getLoginAttemptByAccount(HttpServletRequest request) {
+                List<LoginAttemptDTO> result = loginAttemptService.getLoginAttemptByAccount();
+                return ResponseEntity.status(HttpStatus.OK)
+                                .body(new APIResponse<>(true, "Login attempts retrieved successfully", result, null,
+                                                request.getRequestURI()));
+        }
 
-    @GetMapping("/trust-device/{trustDeviceId}")
-    @Operation(
-            summary = "Get login attempts by trust device ID",
-            description = "Retrieve a list of login attempts associated with the specified trust device ID",
-            parameters = {
-                    @Parameter(name = "trustDeviceId", description = "ID of the trusted device", required = true)
-            },
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "Login attempts retrieved successfully",
-                            content = @Content(schema = @Schema(implementation = LoginAttemptDTO.class))
-                    )
-            }
-    )
-    public ResponseEntity<APIResponse<List<LoginAttemptDTO>>> getLoginAttemptByTrustDeviceId(@PathVariable Integer trustDeviceId, HttpServletRequest request) {
-        List<LoginAttemptDTO> result = loginAttemptService.getLoginAttemptByTrustDeviceId(trustDeviceId);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(new APIResponse<>(true, "Login attempts retrieved successfully", result, null, request.getRequestURI()));
-    }
+        @GetMapping("/trust-device/{trustDeviceId}")
+        @Operation(summary = "Get login attempts by trust device ID", description = "Retrieve a list of login attempts associated with the specified trust device ID", parameters = {
+                        @Parameter(name = "trustDeviceId", description = "ID of the trusted device", required = false)
+        }, responses = {
+                        @ApiResponse(responseCode = "200", description = "Login attempts retrieved successfully", content = @Content(schema = @Schema(implementation = LoginAttemptDTO.class)))
+        })
+        public ResponseEntity<APIResponse<List<LoginAttemptDTO>>> getLoginAttemptByTrustDeviceId(
+                        @PathVariable Integer trustDeviceId, HttpServletRequest request) {
+                List<LoginAttemptDTO> result = loginAttemptService.getLoginAttemptByTrustDeviceId(trustDeviceId);
+                return ResponseEntity.status(HttpStatus.OK)
+                                .body(new APIResponse<>(true, "Login attempts retrieved successfully", result, null,
+                                                request.getRequestURI()));
+        }
 
-    @GetMapping("/filter")
-    @Operation(
-            summary = "Filter login attempts",
-            description = "Filter login attempts based on various criteria",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "Login attempts filtered successfully",
-                            content = @Content(schema = @Schema(implementation = LoginAttemptDTO.class))
-                    )
-            }
-    )
-    public ResponseEntity<APIResponse<PageDTO<LoginAttemptDTO>>> filterLoginAttempts(
-            @Parameter(description = "Filter criteria for login attempts") LoginAttemptFilter filter,
-            @Parameter(description = "Page number for pagination") Integer page,
-            @Parameter(description = "Page size for pagination") Integer size,
-            HttpServletRequest request) {
-        PageDTO<LoginAttemptDTO> result = loginAttemptService.filter(filter, page, size);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(new APIResponse<>(true, "Login attempts filtered successfully", result, null, request.getRequestURI()));
-    }
+        @GetMapping("/filter")
+        @Operation(summary = "Filter trust devices", description = "Retrieve a paginated list of trust devices based on filter criteria", responses = {
+                        @ApiResponse(responseCode = "200", description = "Trust devices retrieved successfully"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized access")
+        })
+        public ResponseEntity<APIResponse<PageDTO<LoginAttemptDTO>>> filterLoginAttempts(
+                        @RequestParam(required = false) Integer accountId,
+                        @RequestParam(required = false) Integer trustDeviceId,
+                        @RequestParam(required = false) Boolean attemptSuccess,
+                        @RequestParam(required = false) LocalDateTime startDate,
+                        @RequestParam(required = false) LocalDateTime endDate,
+                        @RequestParam(defaultValue = "0") Integer page,
+                        @RequestParam(defaultValue = "10") Integer size,
+                        HttpServletRequest request) {
+                LoginAttemptFilter filter = new LoginAttemptFilter();
+                filter.setAccountId(accountId);
+                filter.setTrustDeviceId(trustDeviceId);
+                filter.setAttemptSuccess(attemptSuccess);
+                filter.setStartDate(startDate);
+                filter.setEndDate(endDate);
+                PageDTO<LoginAttemptDTO> result = loginAttemptService.filter(filter, page, size);
+                return ResponseEntity.status(HttpStatus.OK)
+                                .body(new APIResponse<>(true, "Login attempts filtered successfully", result, null,
+                                                request.getRequestURI()));
+        }
 
 }
