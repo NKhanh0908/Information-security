@@ -33,8 +33,8 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
     private final AccountService accountService;
 
     public TrustDeviceServiceImpl(TrustDeviceRepository trustDeviceRepository,
-                                  TrustDeviceMapper trustDeviceMapper,
-                                  @Lazy AccountService accountService) {
+            TrustDeviceMapper trustDeviceMapper,
+            @Lazy AccountService accountService) {
         this.trustDeviceRepository = trustDeviceRepository;
         this.trustDeviceMapper = trustDeviceMapper;
         this.accountService = accountService;
@@ -89,10 +89,13 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
 
     @Override
     public PageDTO<TrustDeviceDTO> filter(TrustDeviceFilter filter, Integer page, Integer size) {
-        log.info("{} Filtering trust devices with filter: {}, page: {}, size: {}", LOG_PREFIX, filter, page, size);
+        log.info("{} Filtering trust devices with page: {}, size: {}", LOG_PREFIX, page, size);
 
         AccountDTO accountDTO = accountService.getAccountAuth();
+        log.info("AccountID: {}", accountDTO.getAccountId());
         filter.setAccountId(accountDTO.getAccountId());
+
+        log.info("filters: {}", filter);
 
         Specification<TrustDevice> specification = TrustDeviceSpecification.filter(filter);
         Pageable pageable = PageRequest.of(page, size);
@@ -125,8 +128,7 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
                 deviceInfo.getIp(),
                 deviceInfo.getDeviceName(),
                 deviceInfo.getLocation(),
-                accountId
-        );
+                accountId);
     }
 
     private TrustDevice createNewTrustDevice(Account account, DeviceInfo deviceInfo) {
@@ -136,8 +138,7 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
         TrustDevice trustDevice = trustDeviceMapper.createTrustDevice(
                 deviceInfo.getIp(),
                 deviceInfo.getDeviceName(),
-                deviceInfo.getLocation()
-        );
+                deviceInfo.getLocation());
         trustDevice.setAccount(account);
 
         return trustDeviceRepository.save(trustDevice);
@@ -156,12 +157,14 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
     }
 
     private String getIdAddress() {
-        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder
+                .getRequestAttributes();
         return requestAttributes != null ? requestAttributes.getRequest().getRemoteAddr() : "unknown";
     }
 
     private String getUserAgent() {
-        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder
+                .getRequestAttributes();
         return requestAttributes != null ? requestAttributes.getRequest().getHeader("User-Agent") : "unknown";
     }
 
@@ -202,9 +205,17 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
             this.location = location;
         }
 
-        public String getIp() { return ip; }
-        public String getDeviceName() { return deviceName; }
-        public String getLocation() { return location; }
+        public String getIp() {
+            return ip;
+        }
+
+        public String getDeviceName() {
+            return deviceName;
+        }
+
+        public String getLocation() {
+            return location;
+        }
     }
 
     private static class DeviceDetector {

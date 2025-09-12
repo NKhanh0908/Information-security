@@ -1,12 +1,16 @@
-DROP DATABASE IF EXISTS informationsecurity;
-CREATE DATABASE informationsecurity;
+-- DROP DATABASE IF EXISTS informationsecurity;
+-- CREATE DATABASE informationsecurity;
 
-USE informationsecurity;
+-- USE informationsecurity;
 
 DROP TABLE IF EXISTS users;
+
 DROP TABLE IF EXISTS account;
+
 DROP TABLE IF EXISTS login_attempt;
+
 DROP TABLE IF EXISTS trust_device;
+
 DROP TABLE IF EXISTS mfa_settings;
 
 CREATE TABLE `users` (
@@ -20,7 +24,7 @@ CREATE TABLE `users` (
     `user_updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Account update timestamp"
 );
 
-CREATE TABLE `account`(
+CREATE TABLE `account` (
     `account_id` INT PRIMARY KEY AUTO_INCREMENT COMMENT "Account ID",
     `user_id` INT NOT NULL COMMENT "User ID",
     `account_username` VARCHAR(100) NOT NULL COMMENT "Username for the account",
@@ -33,7 +37,7 @@ CREATE TABLE `account`(
     `account_updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Account update timestamp"
 );
 
-CREATE TABLE `login_attempt`(
+CREATE TABLE `login_attempt` (
     `attempt_id` INT PRIMARY KEY AUTO_INCREMENT COMMENT "Attempt ID",
     `account_id` INT NOT NULL COMMENT "Account ID",
     `trust_device_id` INT NOT NULL COMMENT "Trusted Device ID",
@@ -55,12 +59,24 @@ CREATE TABLE `trust_device` (
     `device_updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Device update timestamp"
 );
 
-CREATE TABLE `mfa_settings`(
+CREATE TABLE `mfa_settings` (
     `mfa_id` INT PRIMARY KEY AUTO_INCREMENT COMMENT "MFA ID",
     `account_id` INT NOT NULL COMMENT "Account ID",
     `mfa_enabled` BOOLEAN DEFAULT FALSE COMMENT "Is MFA enabled?",
-    `mfa_primary_method` ENUM('TOTP', 'EMAIL', 'WEBAUTHN', 'AUTHENTICATOR_APP', 'BACKUP_CODES') NOT NULL COMMENT "Primary MFA method",
-    `mfa_backup_method` ENUM('TOTP', 'EMAIL', 'WEBAUTHN', 'AUTHENTICATOR_APP', 'BACKUP_CODES') COMMENT "Backup MFA method",
+    `mfa_primary_method` ENUM(
+        'TOTP',
+        'EMAIL',
+        'WEBAUTHN',
+        'AUTHENTICATOR_APP',
+        'BACKUP_CODES'
+    ) NOT NULL COMMENT "Primary MFA method",
+    `mfa_backup_method` ENUM(
+        'TOTP',
+        'EMAIL',
+        'WEBAUTHN',
+        'AUTHENTICATOR_APP',
+        'BACKUP_CODES'
+    ) COMMENT "Backup MFA method",
     `mfa_totp_secret_key` VARCHAR(255) COMMENT "MFA TOTP secret key",
     `mfa_totp_enable` BOOLEAN DEFAULT FALSE COMMENT "Is TOTP enabled?",
     `mfa_backup_codes` TEXT COMMENT "Backup codes for MFA",
@@ -73,23 +89,24 @@ CREATE TABLE `mfa_settings`(
 )
 
 -- Add foreign key constraints
-ALTER TABLE account ADD CONSTRAINT fk_account_user 
-    FOREIGN KEY (user_id) REFERENCES users(user_id);
+ALTER TABLE account
+ADD CONSTRAINT fk_account_user FOREIGN KEY (user_id) REFERENCES users (user_id);
 
-ALTER TABLE login_attempt ADD CONSTRAINT fk_login_account 
-    FOREIGN KEY (account_id) REFERENCES account(account_id);
+ALTER TABLE login_attempt
+ADD CONSTRAINT fk_login_account FOREIGN KEY (account_id) REFERENCES account (account_id);
 
-ALTER TABLE login_attempt ADD CONSTRAINT fk_login_trust_device
-    FOREIGN KEY (trust_device_id) REFERENCES trust_device(device_id);
+ALTER TABLE login_attempt
+ADD CONSTRAINT fk_login_trust_device FOREIGN KEY (trust_device_id) REFERENCES trust_device (device_id);
 
+ALTER TABLE trust_device
+ADD CONSTRAINT fk_device_account FOREIGN KEY (account_id) REFERENCES account (account_id);
 
-ALTER TABLE trust_device ADD CONSTRAINT fk_device_account 
-    FOREIGN KEY (account_id) REFERENCES account(account_id);
-
-ALTER TABLE mfa_settings ADD CONSTRAINT fk_mfa_account 
-    FOREIGN KEY (account_id) REFERENCES account(account_id);
+ALTER TABLE mfa_settings
+ADD CONSTRAINT fk_mfa_account FOREIGN KEY (account_id) REFERENCES account (account_id);
 
 -- Add indexes
-CREATE INDEX idx_account_username ON account(account_username);
-CREATE INDEX idx_account_email ON account(account_email);
-CREATE INDEX idx_login_attempt_time ON login_attempt(attempt_created_at);
+CREATE INDEX idx_account_username ON account (account_username);
+
+CREATE INDEX idx_account_email ON account (account_email);
+
+CREATE INDEX idx_login_attempt_time ON login_attempt (attempt_created_at);

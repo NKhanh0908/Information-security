@@ -23,37 +23,37 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @Tag(name = "Trust Device Controller", description = "Manage trust devices")
 public class TrustDeviceController {
-    private final TrustDeviceService trustDeviceService;
+        private final TrustDeviceService trustDeviceService;
 
-    @Operation(
-            summary = "Filter trust devices",
-            description = "Retrieve a paginated list of trust devices based on filter criteria",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "Trust devices retrieved successfully"
-                    ),
-                    @ApiResponse(
-                            responseCode = "401",
-                            description = "Unauthorized access"
-                    )
-            }
-    )
-    @GetMapping
-    public ResponseEntity<APIResponse<PageDTO<TrustDeviceDTO>>> filter(
-            @RequestParam(required = false) TrustDeviceFilter filter,
-            @RequestParam(defaultValue = "0") Integer page,
-            @RequestParam(defaultValue = "10") Integer size,
-            HttpServletRequest request) {
+        @Operation(summary = "Filter trust devices", description = "Retrieve a paginated list of trust devices based on filter criteria", responses = {
+                        @ApiResponse(responseCode = "200", description = "Trust devices retrieved successfully"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized access")
+        })
+        @GetMapping
+        public ResponseEntity<APIResponse<PageDTO<TrustDeviceDTO>>> filter(
+                        @RequestParam(required = false) Integer accountId,
+                        @RequestParam(required = false) String deviceName,
+                        @RequestParam(required = false) Boolean deviceIsActive,
+                        @RequestParam(required = false) Boolean deviceIsVerified,
+                        @RequestParam(required = false) LocalDateTime fromDate,
+                        @RequestParam(required = false) LocalDateTime toDate,
+                        @RequestParam(defaultValue = "0") Integer page,
+                        @RequestParam(defaultValue = "10") Integer size,
+                        HttpServletRequest request) {
+                TrustDeviceFilter filter = new TrustDeviceFilter();
+                filter.setDeviceName(deviceName);
+                filter.setDeviceIsActive(deviceIsActive);
+                filter.setDeviceIsVerified(deviceIsVerified);
+                filter.setFromDate(fromDate);
+                filter.setToDate(toDate);
 
-        PageDTO<TrustDeviceDTO> resultPage = trustDeviceService.filter(filter, page, size);
+                PageDTO<TrustDeviceDTO> resultPage = trustDeviceService.filter(filter, page, size);
 
-        return ResponseEntity.ok(new APIResponse<>(
-                true,
-                "Trust devices retrieved successfully",
-                resultPage,
-                null,
-                request.getRequestURI()
-        ));
-    }
+                return ResponseEntity.ok(new APIResponse<>(
+                                true,
+                                "Trust devices retrieved successfully",
+                                resultPage,
+                                null,
+                                request.getRequestURI()));
+        }
 }
