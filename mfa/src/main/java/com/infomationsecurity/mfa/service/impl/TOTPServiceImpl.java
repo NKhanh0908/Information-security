@@ -65,8 +65,9 @@ public class TOTPServiceImpl implements TOTPService {
             String secretKey = totpUtil.generateSecretKey();
             String qrCodeUrl = totpUtil.getQRBarcodeURL(
                     accountDTO.getAccountUsername(),
-                    appDomain,
-                    secretKey
+                    appName,
+                    secretKey,
+                    appDomain
             );
 
             String qrCodeImage = qrCodeGenerator.generateQRCodeBase64(qrCodeUrl, 200, 200);

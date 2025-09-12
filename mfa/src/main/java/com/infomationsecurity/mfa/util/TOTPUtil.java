@@ -76,10 +76,10 @@ public class TOTPUtil {
     /**
      * Tạo QR Code URL cho Google Authenticator
      */
-    public String getQRBarcodeURL(String user, String host, String secret) {
+    public String getQRBarcodeURL(String user, String host, String secret, String domain) {
         return String.format(
                 "otpauth://totp/%s@%s?secret=%s&issuer=%s",
-                user, host, secret, host
+                user, host, secret, domain
         );
     }
 
