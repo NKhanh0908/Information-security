@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-MfaApplication<mfa>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.infomationsecurity.mfa.MfaApplication",
+            "projectName": "mfa",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
