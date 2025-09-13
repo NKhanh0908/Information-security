@@ -2,6 +2,7 @@ package com.infomationsecurity.mfa.service.impl;
 
 import com.infomationsecurity.mfa.dto.other.GitHubUserInfo;
 import com.infomationsecurity.mfa.dto.request.accountDTO.AccountCreateDTO;
+import com.infomationsecurity.mfa.dto.request.emailOTP.EmailResendOTP;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
 import com.infomationsecurity.mfa.entity.*;
 import com.infomationsecurity.mfa.exception.CustomException;
@@ -52,7 +53,10 @@ public class AccountServiceImpl implements AccountService {
         Account account = createAccount(accountCreateDTO, user);
         Account savedAccount = accountRepository.save(account);
 
-        mailService.sendVerificationOTPEmail(account.getAccountEmail());
+        EmailResendOTP emailResendOTP = new EmailResendOTP();
+        emailResendOTP.setEmail(account.getAccountEmail());
+
+        mailService.sendVerificationOTPEmail(emailResendOTP);
 
         return accountMapper.entityToDTO(savedAccount);
     }

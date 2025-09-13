@@ -1,5 +1,6 @@
 package com.infomationsecurity.mfa.controller;
 
+import com.infomationsecurity.mfa.dto.request.emailOTP.EmailResendOTP;
 import com.infomationsecurity.mfa.dto.request.emailOTP.EmailVerificationDTO;
 import com.infomationsecurity.mfa.dto.response.APIResponse;
 import com.infomationsecurity.mfa.service.MailService;
@@ -31,7 +32,7 @@ public class MailController {
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Email address to send OTP",
                     required = true,
-                    content = @Content(schema = @Schema(implementation = String.class))
+                    content = @Content(schema = @Schema(implementation = EmailResendOTP.class))
             ),
             responses = {
                     @ApiResponse(responseCode = "202",
@@ -44,7 +45,7 @@ public class MailController {
                     )
             }
     )
-    public ResponseEntity<APIResponse<Void>> sendVerificationEmail(@RequestBody String email, HttpServletRequest request) {
+    public ResponseEntity<APIResponse<Void>> sendVerificationEmail(@RequestBody EmailResendOTP email, HttpServletRequest request) {
         try {
             mailService.sendVerificationOTPEmail(email);
             return ResponseEntity.status(HttpStatus.ACCEPTED)

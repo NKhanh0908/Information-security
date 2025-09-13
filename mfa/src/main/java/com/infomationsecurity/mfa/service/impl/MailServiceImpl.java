@@ -1,6 +1,7 @@
 package com.infomationsecurity.mfa.service.impl;
 
 import com.infomationsecurity.mfa.dto.other.RequestInfo;
+import com.infomationsecurity.mfa.dto.request.emailOTP.EmailResendOTP;
 import com.infomationsecurity.mfa.dto.request.emailOTP.EmailVerificationDTO;
 import com.infomationsecurity.mfa.entity.Account;
 import com.infomationsecurity.mfa.entity.MfaSettings;
@@ -56,15 +57,15 @@ public class MailServiceImpl implements MailService {
     }
 
     @Override
-    public void sendVerificationOTPEmail(String email) {
-        log.info("Preparing to send verification OTP email to: {}", email);
-        Optional<Account> optionalAccount = getAccountByEmail(email);
+    public void sendVerificationOTPEmail(EmailResendOTP emailResendOTP) {
+        log.info("Preparing to send verification OTP email to: {}", emailResendOTP.getEmail());
+        Optional<Account> optionalAccount = getAccountByEmail(emailResendOTP.getEmail());
         Account account = optionalAccount.orElse(null);
         if (account == null) {
-            log.warn("No account found for email: {}", email);
-            throw new RuntimeException("Không tìm thấy tài khoản với email: " + email);
+            log.warn("No account found for email: {}", emailResendOTP.getEmail());
+            throw new RuntimeException("Không tìm thấy tài khoản với email: " + emailResendOTP.getEmail());
         }
-        String OTP = otpService.generateOtp(email);
+        String OTP = otpService.generateOtp(emailResendOTP.getEmail());
 
         sendVerificationEmail(account, OTP);
 
