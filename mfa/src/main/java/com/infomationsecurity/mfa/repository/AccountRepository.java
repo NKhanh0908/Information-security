@@ -2,6 +2,8 @@ package com.infomationsecurity.mfa.repository;
 
 import com.infomationsecurity.mfa.entity.Account;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
@@ -14,6 +16,10 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
 
     @Transactional(readOnly = true)
     Optional<Account> findAccountByAccountEmail(String email);
+
+    @Query(value = "select * from account where account_email = :email", nativeQuery = true)
+    Optional<Account> getAccountByEmail(@Param("email") String email);
+
 
     // You can also define methods for other queries as required
 }

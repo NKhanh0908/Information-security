@@ -58,17 +58,16 @@ public class MailServiceImpl implements MailService {
     @Override
     public void sendVerificationOTPEmail(String email) {
         log.info("Preparing to send verification OTP email to: {}", email);
-        String normalizedEmail = email.trim();
-        Optional<Account> optionalAccount = getAccountByEmail(normalizedEmail);
+        Optional<Account> optionalAccount = getAccountByEmail(email);
         Account account = optionalAccount.orElse(null);
         if (account == null) {
-            log.warn("No account found for email: {}", normalizedEmail);
-            throw new RuntimeException("Không tìm thấy tài khoản với email: " + normalizedEmail);
+            log.warn("No account found for email: {}", email);
+            throw new RuntimeException("Không tìm thấy tài khoản với email: " + email);
         }
-        String OTP = otpService.generateOtp(normalizedEmail);
+        String OTP = otpService.generateOtp(email);
 
-        CompletableFuture<Void> future = sendVerificationEmail(account, OTP);
-        future.join();
+        sendVerificationEmail(account, OTP);
+
     }
 
     @Override
@@ -184,7 +183,8 @@ public class MailServiceImpl implements MailService {
     }
 
     private Optional<Account> getAccountByEmail(String email) {
-        return accountRepository.findAccountByAccountEmail(email);
+        log.info("Get account by email: {}", email);
+        return accountRepository.getAccountByEmail(email);
     }
 
 
