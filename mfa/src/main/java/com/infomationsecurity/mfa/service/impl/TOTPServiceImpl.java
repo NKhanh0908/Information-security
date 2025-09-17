@@ -83,8 +83,6 @@ public class TOTPServiceImpl implements TOTPService {
                     .message("TOTP registration successful. Please scan QR code with Google Authenticator.")
                     .build();
 
-            // Save the secret key in the database (if needed)
-            // mfaSettingsRepository.saveSecretKey(account.getAccountId(), secretKey);
         } catch (Exception e) {
             log.error("Error registering TOTP for user: {}", accountDTO.getAccountUsername(), e);
             throw new CustomException(Error.TOTP_REGISTRATION_FAILED);

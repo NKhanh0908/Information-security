@@ -12,7 +12,7 @@ public class TrustDeviceSpecification {
 
             if (filter.getAccountId() != null) {
                 predicate = criteriaBuilder.and(predicate,
-                        criteriaBuilder.equal(root.get("account").get("id"), filter.getAccountId()));
+                        criteriaBuilder.equal(root.get("account").get("accountId"), filter.getAccountId()));
             }
 
             if (filter.getDeviceName() != null) {

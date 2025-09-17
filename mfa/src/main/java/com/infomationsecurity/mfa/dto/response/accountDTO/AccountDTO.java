@@ -1,5 +1,6 @@
 package com.infomationsecurity.mfa.dto.response.accountDTO;
 
+import com.infomationsecurity.mfa.dto.response.UserDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,4 +22,5 @@ public class AccountDTO {
     private LocalDateTime accountLastLogin;
     private LocalDateTime accountCreatedAt;
     private LocalDateTime accountUpdatedAt;
+    private UserDTO user;
 }

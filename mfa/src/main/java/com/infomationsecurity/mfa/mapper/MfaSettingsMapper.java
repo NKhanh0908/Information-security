@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class MfaSettingsMapper {
-    MfaSettingsDTO entityToDTO(MfaSettings mfaSettings) {
+    public MfaSettingsDTO entityToDTO(MfaSettings mfaSettings) {
         return MfaSettingsDTO.builder()
                 .mfaId(mfaSettings.getMfaId())
                 .mfaEnabled(mfaSettings.getMfaEnabled())

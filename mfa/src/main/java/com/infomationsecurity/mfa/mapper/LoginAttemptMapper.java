@@ -14,6 +14,8 @@ public class LoginAttemptMapper {
                 .attemptUserAgent(loginAttempt.getAttemptUserAgent())
                 .attemptFailureReason(loginAttempt.getAttemptFailureReason() != null ? loginAttempt.getAttemptFailureReason() : null)
                 .attemptCreatedAt(loginAttempt.getAttemptCreatedAt() != null ? loginAttempt.getAttemptCreatedAt().toString() : null)
+                .trustDeviceName(loginAttempt.getTrustDevice() != null ? loginAttempt.getTrustDevice().getDeviceName() : null)
+                .trustDeviceIpAddress(loginAttempt.getTrustDevice() != null ? loginAttempt.getTrustDevice().getDeviceIpAddress() : null)
                 .build();
     }
 
@@ -29,6 +31,14 @@ public class LoginAttemptMapper {
                 .attemptSuccess(false)
                 .attemptUserAgent(userAgent)
                 .attemptFailureReason(failureReason)
+                .build();
+    }
+
+    public LoginAttempt createPendingMfaLoginAttempt(String userAgent) {
+        return LoginAttempt.builder()
+                .attemptSuccess(false)
+                .attemptUserAgent(userAgent)
+                .attemptFailureReason("Pending MFA verification")
                 .build();
     }
 }

@@ -39,11 +39,13 @@ public enum Error {
     PASSWORD_RESET_FAILED(1010, "Password reset failed", HttpStatus.INTERNAL_SERVER_ERROR),
     PASSWORD_RESET_INVALID_REQUEST(1011, "Invalid password reset request", HttpStatus.BAD_REQUEST),
     ACCOUNT_EMAIL_ALREADY_EXISTS(1012, "Email already exists", HttpStatus.CONFLICT),
+    ACCOUNT_USERNAME_ALREADY_EXISTS(1013, "Username already exists", HttpStatus.CONFLICT),
 
     // JWT token-related errors
     JWT_INVALID(14001, "Invalid JWT token", HttpStatus.UNAUTHORIZED),
     JWT_EXPIRED(14002, "JWT token expired", HttpStatus.UNAUTHORIZED),
     JWT_MALFORMED(14003, "Malformed JWT token", HttpStatus.UNAUTHORIZED),
+    INVALID_REFRESH_TOKEN(14004, "Invalid refresh token", HttpStatus.UNAUTHORIZED),
 
     // General validation errors
     INVALID_DATE_FORMAT(33001, "Invalid date format", HttpStatus.BAD_REQUEST),

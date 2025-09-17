@@ -1,5 +1,6 @@
 package com.infomationsecurity.mfa.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.infomationsecurity.mfa.config.BackupCodesConverter;
 import com.infomationsecurity.mfa.enums.MfaMethod;
 import jakarta.persistence.*;
@@ -27,6 +28,7 @@ public class MfaSettings {
 
     @OneToOne
     @JoinColumn(name = "account_id", nullable = false)
+    @JsonBackReference
     private Account account;
 
     @Column(name = "mfa_enabled")
