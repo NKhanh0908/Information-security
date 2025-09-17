@@ -1,4 +1,4 @@
-package com.infomationsecurity.mfa.dto.response;
+package com.infomationsecurity.mfa.dto.request.setting;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,16 +11,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Data
 @Builder
-public class MfaSettingsDTO {
-    private Integer mfaId;
+public class MfaSettingUpdate {
     private Boolean mfaEnabled;
     private String mfaPrimaryMethod;
     private String mfaBackupMethod;
-    private String mfaTotpSecretKey;
     private Boolean mfaTotpEnable;
     private Boolean mfaEmailEnabled;
     private Boolean mfaWebauthnEnabled;
     private Boolean mfaAuthenticatorAppEnabled;
     private Boolean mfaRequiredMfaForSensitiveActions;
-    private LocalDateTime mfaUpdatedAt;
 }

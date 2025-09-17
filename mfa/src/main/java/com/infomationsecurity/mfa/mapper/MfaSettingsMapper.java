@@ -1,6 +1,6 @@
 package com.infomationsecurity.mfa.mapper;
 
-import com.infomationsecurity.mfa.dto.response.MfaSettingsDTO;
+import com.infomationsecurity.mfa.dto.response.settingDTO.MfaSettingsDTO;
 import com.infomationsecurity.mfa.entity.MfaSettings;
 import org.springframework.stereotype.Component;
 

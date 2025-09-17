@@ -1,15 +1,13 @@
 package com.infomationsecurity.mfa.service.impl;
 
-import com.beust.ah.A;
 import com.infomationsecurity.mfa.dto.other.RequestInfo;
 import com.infomationsecurity.mfa.dto.request.accountDTO.VerifyDeviceWithTOTP;
-import com.infomationsecurity.mfa.dto.response.MfaSettingsDTO;
+import com.infomationsecurity.mfa.dto.response.settingDTO.MfaSettingsDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AuthenticationDTO;
 import com.infomationsecurity.mfa.entity.Account;
 import com.infomationsecurity.mfa.entity.MfaSettings;
 import com.infomationsecurity.mfa.entity.TrustDevice;
-import com.infomationsecurity.mfa.enums.MfaMethod;
 import com.infomationsecurity.mfa.exception.CustomException;
 import com.infomationsecurity.mfa.exception.Error;
 import com.infomationsecurity.mfa.mapper.MfaSettingsMapper;
