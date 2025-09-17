@@ -1,5 +1,6 @@
 package com.infomationsecurity.mfa.service.impl;
 
+import com.beust.ah.A;
 import com.infomationsecurity.mfa.dto.other.RequestInfo;
 import com.infomationsecurity.mfa.dto.request.accountDTO.VerifyDeviceWithTOTP;
 import com.infomationsecurity.mfa.dto.response.MfaSettingsDTO;
@@ -73,35 +74,12 @@ public class MfaSettingsServiceImpl implements MfaSettingsService {
 
     @Transactional
     @Override
-    public MfaSettingsDTO getMfaSettingsByAccountId(Integer accountId) {
-        log.info("{} Get MFA settings for account ID: {}", LOG_PREFIX, accountId);
+    public MfaSettingsDTO getMfaSettingsByAccount() {
+        log.info("{} Get MFA settings for account", LOG_PREFIX);
 
-        MfaSettings mfaSettings = getMfaSettingsByAccount(accountId);
-        switch (mfaSettings.getMfaPrimaryMethod()) {
-            case MfaMethod.EMAIL:
-                log.info("MFA settings for account ID {}: Email method", accountId);
-                // TODO: Implement logic for email MFA settings
-                break;
-            case MfaMethod.TOTP:
-                log.info("MFA settings for account ID {}: TOTP method", accountId);
-                // TODO: Implement logic for TOTP MFA settings
-                break;
-            case MfaMethod.AUTHENTICATOR_APP:
-                log.info("MFA settings for account ID {}: Authenticator App method", accountId);
-                // TODO: Implement logic for Authenticator App MFA settings
-                break;
-            case MfaMethod.WEBAUTHN:
-                log.info("MFA settings for account ID {}: WebAuthn method", accountId);
-                // TODO: Implement logic for WebAuthn MFA settings
-                break;
-            case MfaMethod.BACKUP_CODES:
-                log.info("MFA settings for account ID {}: Backup Codes method", accountId);
-                // TODO: Implement logic for Backup Codes MFA settings
-                break;
-            default:
-                log.error("Unsupported MFA type: {}", mfaSettings.getMfaBackupMethod());
-                throw new CustomException(Error.MFA_METHOD_NOT_SUPPORTED);
-        }
+        AccountDTO accountDTO = accountService.getAccountAuth();
+
+        MfaSettings mfaSettings = getMfaSettingsByAccount(accountDTO.getAccountId());
 
         return mfaSettingsMapper.entityToDTO(mfaSettings);
     }

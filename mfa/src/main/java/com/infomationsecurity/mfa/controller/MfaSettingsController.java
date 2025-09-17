@@ -12,15 +12,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/mfa-settings")
 @RequiredArgsConstructor
-@Tag(name = "Login attempt Controller", description = "List and manage login attempts")
+@Tag(name = "Mfa Setting", description = "Endpoints for managing MFA settings")
 public class MfaSettingsController {
     private final MfaSettingsService mfaSettingsService;
 
@@ -58,4 +55,32 @@ public class MfaSettingsController {
                 request.getRequestURI()
         ));
     }
+
+    @GetMapping()
+    @Operation(
+            summary = "Get MFA settings",
+            description = "Retrieve the current user's MFA settings",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "MFA settings retrieved successfully",
+                            content = @Content(schema = @Schema(implementation = AuthenticationDTO.class))
+                    ),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - User not authenticated"),
+                    @ApiResponse(responseCode = "404", description = "MFA settings not found")
+            }
+    )
+    public ResponseEntity<APIResponse<?>> getMfaSettings(HttpServletRequest request) {
+        var mfaSettingsDTO = mfaSettingsService.getMfaSettingsByAccount();
+
+        return ResponseEntity.ok(new APIResponse<>(
+                true,
+                "MFA settings retrieved successfully",
+                mfaSettingsDTO,
+                null,
+                request.getRequestURI()
+        ));
+    }
+
+
 }

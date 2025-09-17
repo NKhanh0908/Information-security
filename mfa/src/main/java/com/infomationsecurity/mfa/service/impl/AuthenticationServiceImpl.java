@@ -146,23 +146,23 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             log.info("{} Triggering MFA process for account: {} on device: {}",
                     LOG_PREFIX, account.getAccountId(), trustDevice.getDeviceName());
 
-            MfaSettingsDTO mfaSettingsDTO = mfaSettingsService.getMfaSettingsByAccountId(account.getAccountId());
+            MfaSettings mfaSettings = mfaSettingsService.getMfaSettingsByAccount(account.getAccountId());
 
-            return createMfaRequiredResponse(account, trustDevice, mfaSettingsDTO);
+            return createMfaRequiredResponse(account, trustDevice, mfaSettings);
         } catch (Exception e) {
             log.error("{} Error triggering MFA process: ", LOG_PREFIX, e);
             throw new RuntimeException("Failed to trigger MFA process", e);
         }
     }
 
-    private AuthenticationDTO createMfaRequiredResponse(Account account,TrustDevice trustDevice, MfaSettingsDTO mfaSettingsDTO) {
+    private AuthenticationDTO createMfaRequiredResponse(Account account,TrustDevice trustDevice, MfaSettings mfaSettings) {
         return AuthenticationDTO.builder()
                 .token(null) // No token until MFA is completed
                 .refreshToken(null)
                 .mfaRequired(true)
                 .deviceId(trustDevice.getDeviceId())
                 .message("MFA verification required for this device")
-                .mfaMethod(mfaSettingsDTO.getMfaPrimaryMethod())
+                .mfaMethod(mfaSettings.getMfaPrimaryMethod().name())
                 .username(account.getAccountUsername())
                 .build();
     }

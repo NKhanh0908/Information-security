@@ -19,7 +19,7 @@ public interface MfaSettingsService {
 
     MfaSettingsDTO update(MfaSettings mfaSettings);
 
-    MfaSettingsDTO getMfaSettingsByAccountId(Integer accountId);
+    MfaSettingsDTO getMfaSettingsByAccount();
 
     MfaSettings getMfaSettingsByAccount(Integer accountId);
 
