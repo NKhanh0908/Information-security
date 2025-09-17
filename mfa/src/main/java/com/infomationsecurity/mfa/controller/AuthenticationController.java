@@ -14,10 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Slf4j
@@ -80,6 +77,33 @@ public class AuthenticationController {
                 true,
                 "Authentication successful",
                 authDTO,
+                null,
+                request.getRequestURI()));
+    }
+
+    @GetMapping("/verify-password")
+    @Operation(
+            summary = "Verify Password",
+            description = "Verify the user's password for sensitive operations",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "User login credentials",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = FormLoginDTO.class))
+            ),
+            responses = {
+                    @ApiResponse(responseCode = "200",
+                            description = "Password verification result",
+                            content = @Content(schema = @Schema(implementation = Boolean.class))
+                    ),
+                    @ApiResponse(responseCode = "401", description = "Invalid credentials")
+            }
+    )
+    public ResponseEntity<APIResponse<Boolean>> verifyPassword(@RequestParam FormLoginDTO formLoginDTO, HttpServletRequest request) {
+        Boolean isValid = authenticationService.verifyPassword(formLoginDTO.getPassword());
+        return ResponseEntity.ok(new APIResponse<>(
+                true,
+                "Password verification result",
+                isValid,
                 null,
                 request.getRequestURI()));
     }

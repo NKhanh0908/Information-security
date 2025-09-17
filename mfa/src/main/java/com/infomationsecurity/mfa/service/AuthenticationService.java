@@ -10,6 +10,8 @@ import com.infomationsecurity.mfa.entity.Account;
 public interface AuthenticationService {
     AuthenticationDTO signIn(FormLoginDTO formLoginDTO);
 
+    Boolean verifyPassword(String rawPassword);
+
     AuthenticationDTO authWithGitHub(String authorizationCode);
 
     AuthenticationDTO processSuccessfulLogin(Account account, RequestInfo requestInfo, String username);

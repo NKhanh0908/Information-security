@@ -3,8 +3,7 @@ package com.infomationsecurity.mfa.service.impl;
 import com.infomationsecurity.mfa.dto.other.GitHubUserInfo;
 import com.infomationsecurity.mfa.dto.other.RequestInfo;
 import com.infomationsecurity.mfa.dto.request.accountDTO.FormLoginDTO;
-import com.infomationsecurity.mfa.dto.request.accountDTO.RefreshTokenDTO;
-import com.infomationsecurity.mfa.dto.response.MfaSettingsDTO;
+import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AuthenticationDTO;
 import com.infomationsecurity.mfa.entity.Account;
 import com.infomationsecurity.mfa.entity.MfaSettings;
@@ -76,6 +75,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * @param rawPassword
+     * @return
+     */
+    @Override
+    public Boolean verifyPassword(String rawPassword) {
+        log.info("{} Verifying password for authenticated user", LOG_PREFIX);
+        AccountDTO accountDTO = accountService.getAccountAuth();
+
+        return passwordEncoder.matches(rawPassword, accountService.getAccountByUsername(accountDTO.getAccountUsername()).getPassword());
     }
 
     @Override
