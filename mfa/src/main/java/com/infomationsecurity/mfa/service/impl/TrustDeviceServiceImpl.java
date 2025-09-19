@@ -104,6 +104,17 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
         return buildPageDTO(trustDevicePage, page, size);
     }
 
+    /**
+     * @param trustDeviceId
+     */
+    @Override
+    public void deleteTrustDevice(Integer trustDeviceId) {
+        log.info("{} Deleting trust device with ID: {}", LOG_PREFIX, trustDeviceId);
+
+        TrustDevice trustDevice = getTrustDeviceById(trustDeviceId);
+        trustDeviceRepository.delete(trustDevice);
+    }
+
     @Override
     public TrustDevice createOrGetTrustDevice(Account account, RequestInfo requestInfo) {
         return create(account, requestInfo.getIp(), requestInfo.getUserAgent());

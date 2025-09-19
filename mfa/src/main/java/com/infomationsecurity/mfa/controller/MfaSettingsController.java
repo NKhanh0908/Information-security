@@ -3,6 +3,7 @@ package com.infomationsecurity.mfa.controller;
 import com.infomationsecurity.mfa.dto.request.accountDTO.VerifyDeviceWithTOTP;
 import com.infomationsecurity.mfa.dto.response.APIResponse;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AuthenticationDTO;
+import com.infomationsecurity.mfa.dto.response.settingDTO.MfaSettingsDTO;
 import com.infomationsecurity.mfa.service.MfaSettingsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -77,6 +78,37 @@ public class MfaSettingsController {
                 true,
                 "MFA settings retrieved successfully",
                 mfaSettingsDTO,
+                null,
+                request.getRequestURI()
+        ));
+    }
+
+    @PatchMapping
+    @Operation(
+            summary = "Update MFA settings",
+            description = "Update the current user's MFA settings",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "MFA settings updated successfully",
+                            content = @Content(schema = @Schema(implementation = AuthenticationDTO.class))
+                    ),
+                    @ApiResponse(responseCode = "400", description = "Invalid input data"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - User not authenticated"),
+                    @ApiResponse(responseCode = "404", description = "MFA settings not found")
+            }
+    )
+    public ResponseEntity<APIResponse<MfaSettingsDTO>> updateMfaSettings(
+            @RequestBody com.infomationsecurity.mfa.dto.request.setting.MfaSettingUpdate mfaSettingUpdate,
+            @RequestParam Integer mfaId,
+            HttpServletRequest request
+    ) {
+        MfaSettingsDTO updatedMfaSettings = mfaSettingsService.update(mfaSettingUpdate, mfaId);
+
+        return ResponseEntity.ok(new APIResponse<>(
+                true,
+                "MFA settings updated successfully",
+                updatedMfaSettings,
                 null,
                 request.getRequestURI()
         ));

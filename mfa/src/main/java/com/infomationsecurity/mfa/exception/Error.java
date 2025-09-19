@@ -14,6 +14,7 @@ public enum Error {
     CONFLICT(409, "Conflict", HttpStatus.CONFLICT),
     METHOD_NOT_ALLOWED(405, "Method not allowed", HttpStatus.METHOD_NOT_ALLOWED),
     TOO_MANY_REQUESTS(429, "Too many requests", HttpStatus.TOO_MANY_REQUESTS),
+    INVALID_ENUM(422, "Invalid enum", HttpStatus.BAD_REQUEST),
 
     // Server Error
     UNCATEGORIZED_EXCEPTION(9999, "Unclassified error", HttpStatus.INTERNAL_SERVER_ERROR),

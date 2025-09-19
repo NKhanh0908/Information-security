@@ -23,4 +23,6 @@ public interface TrustDeviceService {
     TrustDevice createOrGetTrustDevice(Account account, RequestInfo requestInfo);
 
     PageDTO<TrustDeviceDTO> filter(TrustDeviceFilter filter, Integer page, Integer size);
+
+    void deleteTrustDevice(Integer trustDeviceId);
 }
