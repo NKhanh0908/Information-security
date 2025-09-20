@@ -1,9 +1,12 @@
 package com.infomationsecurity.mfa.service;
 
+import com.infomationsecurity.mfa.dto.request.fiters.LoginAttemptFilter;
 import com.infomationsecurity.mfa.dto.response.LoginAttemptDTO;
+import com.infomationsecurity.mfa.dto.response.PageDTO;
 import com.infomationsecurity.mfa.entity.Account;
 import com.infomationsecurity.mfa.entity.LoginAttempt;
 import com.infomationsecurity.mfa.entity.TrustDevice;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,8 +20,14 @@ public interface LoginAttemptService {
 
     CompletableFuture<LoginAttemptDTO> saveFailedLoginAttempt(Account account, TrustDevice trustDevice, String userAgent, String failureReason);
 
+    CompletableFuture<LoginAttemptDTO> saveLoginAttemptPendingMfa(Account account, TrustDevice trustDevice, String userAgent);
+
+    LoginAttemptDTO completeMfaVerification(Integer attemptId, boolean mfaSuccess, String mfaMethod);
+
     List<LoginAttemptDTO> getLoginAttemptByAccount();
 
     List<LoginAttemptDTO> getLoginAttemptByTrustDeviceId(Integer trustDeviceId);
+
+    PageDTO<LoginAttemptDTO> filter(LoginAttemptFilter filter, Integer page, Integer size);
 
 }

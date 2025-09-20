@@ -1,4 +1,4 @@
-package com.infomationsecurity.mfa.dto.response;
+package com.infomationsecurity.mfa.dto.response.deviceDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,6 +1,6 @@
 package com.infomationsecurity.mfa.util;
 
-import com.infomationsecurity.mfa.dto.oath2.GitHubUserInfo;
+import com.infomationsecurity.mfa.dto.other.GitHubUserInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

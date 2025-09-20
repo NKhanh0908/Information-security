@@ -39,7 +39,51 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO update(UserUpdateDTO userUpdateDTO) {
-        return null;
+        // Đây là luôn lấy User dựa theo account hiện tại trong SecurityContext, chứ không dựa vào JSON gửi đi .
+        // // Lấy ra account hiện tại 
+        // AccountDTO acc = accountService.getAccountAuth(); // phương thức lấy ra account hiện tại
+        // // Tìm thông tin account thông qua id của user
+        // User oldUser = userRepository.findByAccountId(acc.getAccountId()); // Thông tin user thể hiện đầy đủ trong file user bên trong entity
+    
+        // // Kiểm tra xem có tìm ra thông tin user hay không
+        // if(oldUser == null){
+        //     throw new RuntimeException("User not found for account id: " + acc.getAccountId()); // Thông báo không tìm thấy thông tin user
+        // }
+
+        // // Không phải thông tin nào cũng sẽ thay đổi, kiểm tra xem thông tin nào cần thay đổi sẽ cập nhật lại còn bỏ trống sẽ chỉ cập nhật những thông tin truyền vào 
+        // // Phương thức isBlank để kiểm tra trường nhập liệu kiểu String có empty hay không, chỉ kiểm tra được kiểu String
+        // if (userUpdateDTO.getUserName() != null && !userUpdateDTO.getUserName().isBlank()) {
+        //     oldUser.setUserName(userUpdateDTO.getUserName());
+        // }
+
+        
+        // Đây là cách xử lí khi gửi thông tin user theo JSON
+        User oldUser = userRepository.findByUserName(userUpdateDTO.getUserName());
+        if (oldUser == null) {
+            throw new RuntimeException("User not found: " + userUpdateDTO.getUserName());
+        }
+
+        
+        if (userUpdateDTO.getUserGender() != null) {
+            oldUser.setUserGender(userUpdateDTO.getUserGender());
+        }
+        
+        if (userUpdateDTO.getUserDateOfBirth() != null) {
+            oldUser.setUserDateOfBirth(userUpdateDTO.getUserDateOfBirth());
+        }
+        
+        if (userUpdateDTO.getUserAddress() != null && !userUpdateDTO.getUserAddress().isBlank()) {
+            oldUser.setUserAddress(userUpdateDTO.getUserAddress());
+        }
+        
+        if (userUpdateDTO.getUserPhone() != null && !userUpdateDTO.getUserPhone().isBlank()) {
+            oldUser.setUserPhone(userUpdateDTO.getUserPhone());
+        }
+        
+
+        // Cập nhật thông tin user mới sau khi thay đổi
+        User newUser = userRepository.save(oldUser);
+        return userMapper.entityToDTO(newUser); // Chuyển đổi entity sang DTO sau khi cập nhật thông tin và sẽ luôn trả về đúng với thông tin trên UserDTO
     }
 
     @Override

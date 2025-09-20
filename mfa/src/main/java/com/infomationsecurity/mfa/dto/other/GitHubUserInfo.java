@@ -1,4 +1,4 @@
-package com.infomationsecurity.mfa.dto.oath2;
+package com.infomationsecurity.mfa.dto.other;
 
 import lombok.Builder;
 import lombok.Data;

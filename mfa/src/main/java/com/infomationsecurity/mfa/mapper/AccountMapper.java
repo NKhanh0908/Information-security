@@ -7,6 +7,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class AccountMapper {
+    private final UserMapper userMapper;
+
+public AccountMapper(UserMapper userMapper) {
+        this.userMapper = userMapper;
+    }
+
     public Account createDTOToEntity(AccountCreateDTO accountCreateDTO){
         return Account.builder()
                 .accountUsername(accountCreateDTO.getUsername())
@@ -27,6 +33,7 @@ public class AccountMapper {
                 .accountLastLogin(account.getAccountLastLogin() != null ? account.getAccountLastLogin() : null)
                 .accountCreatedAt(account.getAccountCreatedAt())
                 .accountUpdatedAt(account.getAccountUpdatedAt() != null ? account.getAccountUpdatedAt() : null)
+                .user(userMapper.entityToDTO(account.getUser()))
                 .build();
     }
 }

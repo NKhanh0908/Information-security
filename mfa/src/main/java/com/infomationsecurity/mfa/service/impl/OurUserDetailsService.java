@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class OurUserDetailsService implements UserDetailsService {
+    private final String LOG_PREFIX = "[OurUserDetailsService]: ";
     private final AccountRepository accountRepository;
 
     /**
@@ -26,7 +27,7 @@ public class OurUserDetailsService implements UserDetailsService {
     @Transactional(readOnly = true)
     @Override
     public UserDetails loadUserByUsername(String username) {
-        log.info("Find user by username: {}", username);
+        log.info("{} Loading user by username: {}", LOG_PREFIX, username);
 
         return accountRepository.findByAccountUsername(username)
                 .orElseThrow(()-> new UsernameNotFoundException("Account not found with username: " + username));

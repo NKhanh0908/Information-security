@@ -1,5 +1,6 @@
 package com.infomationsecurity.mfa.controller;
 
+import com.infomationsecurity.mfa.dto.request.accountDTO.RefreshTokenDTO;
 import com.infomationsecurity.mfa.dto.response.APIResponse;
 import com.infomationsecurity.mfa.dto.request.accountDTO.AccountCreateDTO;
 import com.infomationsecurity.mfa.dto.request.accountDTO.FormLoginDTO;
@@ -54,62 +55,7 @@ public class AccountController {
                         request.getRequestURI()));
     }
 
-    @PostMapping("/auth/github")
-    @Operation(
-            summary = "Sign In with GitHub",
-            description = "Authenticate user using GitHub OAuth2 and return access information",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "GitHub OAuth2 authorization code",
-                    required = true,
-                    content = @Content(schema = @Schema(implementation = OAuth2RequestDTO.class))
-            ),
-            responses = {
-                    @ApiResponse(responseCode = "200",
-                            description = "GitHub authentication successful",
-                            content = @Content(schema = @Schema(implementation = AuthenticationDTO.class))
-                    ),
-                    @ApiResponse(responseCode = "400", description = "Invalid authorization code"),
-                    @ApiResponse(responseCode = "401", description = "Account not found"),
-                    @ApiResponse(responseCode = "423", description = "Account locked")
-            }
-    )
-    public ResponseEntity<APIResponse<AuthenticationDTO>> signInWithGithub(@RequestBody OAuth2RequestDTO oauth2Request, HttpServletRequest request) {
-        log.info("Received GitHub OAuth2 authorization code: {}", oauth2Request.getAuthorizationCode());
-        AuthenticationDTO authDTO = accountService.authWithGitHub(oauth2Request.getAuthorizationCode());
-        return ResponseEntity.ok(new APIResponse<>(
-                true,
-                "GitHub authentication successful",
-                authDTO,
-                null,
-                request.getRequestURI()));
-    }
 
-    @PostMapping("/sign-in")
-    @Operation(
-            summary = "Sign In",
-            description = "Authenticate user and return access information",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "User login credentials",
-                    required = true,
-                    content = @Content(schema = @Schema(implementation = FormLoginDTO.class))
-            ),
-            responses = {
-                    @ApiResponse(responseCode = "200",
-                            description = "Authentication successful",
-                            content = @Content(schema = @Schema(implementation = AuthenticationDTO.class))
-                    ),
-                    @ApiResponse(responseCode = "401", description = "Invalid credentials")
-            }
-    )
-    public ResponseEntity<APIResponse<AuthenticationDTO>> signIn(@RequestBody FormLoginDTO formLoginDTO, HttpServletRequest request) {
-        AuthenticationDTO authDTO = accountService.signIn(formLoginDTO);
-        return ResponseEntity.ok(new APIResponse<>(
-                true,
-                "Authentication successful",
-                authDTO,
-                null,
-                request.getRequestURI()));
-    }
 
     @GetMapping
     @Operation(
@@ -132,5 +78,7 @@ public class AccountController {
                 null,
                 request.getRequestURI()));
     }
+
+
 
 }

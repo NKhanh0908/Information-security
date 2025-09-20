@@ -19,11 +19,13 @@ public interface TrustDeviceRepository extends JpaRepository<TrustDevice, Intege
         FROM trust_device td
         WHERE td.device_ip_address = :device_ip_address
           AND td.device_name = :device_name
-          AND td.device_location = :device_location;
+          AND td.device_location = :device_location
+    AND td.account_id = :account_id
     """,
     nativeQuery = true)
     Optional<TrustDevice> findByDeviceIpAddressAndDeviceNameAndDeviceLocation(@Param("device_ip_address") String deviceIpAddress,
                                                                            @Param("device_name") String deviceName,
-                                                                           @Param("device_location") String deviceLocation);
+                                                                           @Param("device_location") String deviceLocation,
+                                                                              @Param("account_id") Integer accountId);
 
 }

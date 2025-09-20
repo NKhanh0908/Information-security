@@ -46,7 +46,7 @@ public class AccountCreateDTO {
             minLength = 5,
             nullable = false)
     @NotBlank(message = "Password is required")
-    @Size(min = 5, message = "Password must be at least 8 characters")
+    @Size(min = 8, message = "Password must be at least 8 characters")
     // @Pattern(...) nếu muốn enforce password complexity
     private String password;
 
