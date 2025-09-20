@@ -19,4 +19,10 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     """, nativeQuery = true)
     User findByAccountId(@Param("accountId") Integer accountId);
 
+    // Cái đoạn quan trọng nhất vì thông tin update không tìm thông qua id mà phải tìm qua userName
+    // nên phải tạo thêm phương thức tìm user thông quan userName
+
+    @Query(value = "SELECT * FROM users u WHERE u.user_name = :userName", nativeQuery = true)
+        User findByUserName(@Param("userName") String userName);
+
 }

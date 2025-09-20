@@ -65,7 +65,7 @@ public class AccountServiceImpl implements AccountService {
     public AccountDTO signUpWithGoogle() {
         return null;
     }
-
+    // Đoạn này Minh Đức comment chạy thử sửa lại theo gpt
     @Override
     public AccountDTO getAccountAuth() {
         log.info("{} Retrieving authenticated user account information", LOG_PREFIX);
@@ -75,9 +75,49 @@ public class AccountServiceImpl implements AccountService {
             throw new CustomException(Error.UNAUTHORIZED);
         }
 
-        Account account = (Account) authentication.getPrincipal();
+        // Account account = (Account) authentication.getPrincipal();
+        // return accountMapper.entityToDTO(account);
+
+        // principal là String (username)
+        String username = authentication.getName(); // hoặc (String) authentication.getPrincipal()
+        log.info("Authenticated username = {}", username);
+
+        Account account = accountRepository.findByAccountUsername(username)
+                .orElseThrow(() -> new CustomException(Error.ACCOUNT_NOT_FOUND));
+
         return accountMapper.entityToDTO(account);
     }
+
+//     @Override
+// public AccountDTO getAccountAuth() {
+//     log.info("{} Retrieving authenticated user account information", LOG_PREFIX);
+//     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+//     if (authentication == null || !authentication.isAuthenticated()) {
+//         throw new CustomException(Error.UNAUTHORIZED);
+//     }
+
+//     Object principal = authentication.getPrincipal();
+//     Account account;
+
+//     if (principal instanceof Account acc) {
+//         // Nếu principal đã là Account
+//         account = acc;
+//     } else if (principal instanceof org.springframework.security.core.userdetails.UserDetails userDetails) {
+//         // Nếu principal là UserDetails (Spring default)
+//         account = accountRepository.findByAccountUsername(userDetails.getUsername())
+//                 .orElseThrow(() -> new CustomException(Error.ACCOUNT_NOT_FOUND));
+//     } else if (principal instanceof String username) {
+//         // Nếu principal chỉ là String (username)
+//         account = accountRepository.findByAccountUsername(username)
+//                 .orElseThrow(() -> new CustomException(Error.ACCOUNT_NOT_FOUND));
+//     } else {
+//         throw new CustomException(Error.UNAUTHORIZED);
+//     }
+
+//     return accountMapper.entityToDTO(account);
+// }
+
 
     @Override
     public Account getAccountByUsername(String username) {

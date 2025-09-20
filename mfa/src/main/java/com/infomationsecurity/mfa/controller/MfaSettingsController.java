@@ -1,10 +1,14 @@
 package com.infomationsecurity.mfa.controller;
 
 import com.infomationsecurity.mfa.dto.request.accountDTO.VerifyDeviceWithTOTP;
+import com.infomationsecurity.mfa.dto.request.userDTO.UserUpdateDTO;
 import com.infomationsecurity.mfa.dto.response.APIResponse;
+import com.infomationsecurity.mfa.dto.response.UserDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AuthenticationDTO;
 import com.infomationsecurity.mfa.dto.response.settingDTO.MfaSettingsDTO;
 import com.infomationsecurity.mfa.service.MfaSettingsService;
+import com.infomationsecurity.mfa.service.UserService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Mfa Setting", description = "Endpoints for managing MFA settings")
 public class MfaSettingsController {
     private final MfaSettingsService mfaSettingsService;
+    private final UserService userService;
 
     @PostMapping("/verify-totp")
     @Operation(
@@ -113,6 +118,7 @@ public class MfaSettingsController {
                 request.getRequestURI()
         ));
     }
+
 
 
 }
