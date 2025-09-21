@@ -1,6 +1,7 @@
 package com.infomationsecurity.mfa.controller;
 
 import com.infomationsecurity.mfa.dto.request.accountDTO.FormLoginDTO;
+import com.infomationsecurity.mfa.dto.request.accountDTO.PasswordVerify;
 import com.infomationsecurity.mfa.dto.request.oauth2.OAuth2RequestDTO;
 import com.infomationsecurity.mfa.dto.response.APIResponse;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AuthenticationDTO;
@@ -81,14 +82,14 @@ public class AuthenticationController {
                 request.getRequestURI()));
     }
 
-    @GetMapping("/verify-password")
+    @PostMapping("/verify-password")
     @Operation(
             summary = "Verify Password",
             description = "Verify the user's password for sensitive operations",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "User login credentials",
                     required = true,
-                    content = @Content(schema = @Schema(implementation = FormLoginDTO.class))
+                    content = @Content(schema = @Schema(implementation = PasswordVerify.class))
             ),
             responses = {
                     @ApiResponse(responseCode = "200",
@@ -98,8 +99,8 @@ public class AuthenticationController {
                     @ApiResponse(responseCode = "401", description = "Invalid credentials")
             }
     )
-    public ResponseEntity<APIResponse<Boolean>> verifyPassword(@RequestParam FormLoginDTO formLoginDTO, HttpServletRequest request) {
-        Boolean isValid = authenticationService.verifyPassword(formLoginDTO.getPassword());
+    public ResponseEntity<APIResponse<Boolean>> verifyPassword(@RequestBody PasswordVerify passwordVerify, HttpServletRequest request) {
+        Boolean isValid = authenticationService.verifyPassword(passwordVerify.getPassword());
         return ResponseEntity.ok(new APIResponse<>(
                 true,
                 "Password verification result",

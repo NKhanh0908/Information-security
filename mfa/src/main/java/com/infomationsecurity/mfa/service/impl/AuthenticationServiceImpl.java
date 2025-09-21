@@ -179,14 +179,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     private boolean requiresMfaVerification(Account account, TrustDevice trustDevice) {
-        if (isFirstTimeLogin(trustDevice)) {
-            log.info("{} First time login detected for device: {}", LOG_PREFIX, trustDevice.getDeviceName());
-            return false;
-        }
+//        if (!isFirstTimeLogin(trustDevice)) {
+//            log.info("{} First time login detected for device: {}", LOG_PREFIX, trustDevice.getDeviceName());
+//            return false;
+//        }
 
         MfaSettings mfaSettings = mfaSettingsService.getMfaSettingsByAccount(account.getAccountId());
 
-        if (!trustDevice.getDeviceIsVerified() && mfaSettings.getMfaEnabled()) {
+        if (mfaSettings.getMfaEnabled() && !isFirstTimeLogin(trustDevice)) {
             log.info("{} Device is already verified: {}", LOG_PREFIX, trustDevice.getDeviceName());
             return false;
         }

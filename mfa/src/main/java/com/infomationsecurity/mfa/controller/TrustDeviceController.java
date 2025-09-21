@@ -54,14 +54,14 @@ public class TrustDeviceController {
                                 request.getRequestURI()));
         }
 
-        @DeleteMapping
+        @DeleteMapping("/{trustDeviceId}")
         @Operation(summary = "Delete a trust device", description = "Delete a trust device by its ID", responses = {
                         @ApiResponse(responseCode = "200", description = "Trust device deleted successfully"),
                         @ApiResponse(responseCode = "401", description = "Unauthorized access"),
                         @ApiResponse(responseCode = "404", description = "Trust device not found")
         })
         public ResponseEntity<APIResponse<Void>> deleteTrustDevice(
-                        @RequestParam Integer trustDeviceId,
+                        @PathVariable Integer trustDeviceId,
                         HttpServletRequest request) {
                 trustDeviceService.deleteTrustDevice(trustDeviceId);
                 return ResponseEntity.ok(new APIResponse<>(
