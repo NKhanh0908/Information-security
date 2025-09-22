@@ -87,6 +87,9 @@ public enum Error {
     MFA_SETTINGS_ALREADY_EXISTS(40006, "MFA settings already exist", HttpStatus.CONFLICT),
     MFA_METHOD_NOT_SUPPORTED(40007, "MFA method not supported", HttpStatus.BAD_REQUEST),
 
+    //Trust Device
+    TRUST_DEVICE_NOT_FOUND(1100, "Trust device not found", HttpStatus.NOT_FOUND),
+
     // Totp related errors
     TOTP_SECRET_KEY_NOT_FOUND(41001, "TOTP secret key not found", HttpStatus.NOT_FOUND),
     TOTP_REGISTRATION_FAILED(41002, "TOTP registration failed", HttpStatus.INTERNAL_SERVER_ERROR),

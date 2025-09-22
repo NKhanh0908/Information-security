@@ -1,6 +1,6 @@
 package com.infomationsecurity.mfa.controller;
 
-import com.infomationsecurity.mfa.dto.request.accountDTO.FormLoginDTO;
+import com.infomationsecurity.mfa.dto.request.accountDTO.FormVerify;
 import com.infomationsecurity.mfa.dto.request.accountDTO.PasswordVerify;
 import com.infomationsecurity.mfa.dto.request.emailOTP.EmailVerificationDTO;
 import com.infomationsecurity.mfa.dto.request.oauth2.OAuth2RequestDTO;
@@ -63,7 +63,7 @@ public class AuthenticationController {
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "User login credentials",
                     required = true,
-                    content = @Content(schema = @Schema(implementation = FormLoginDTO.class))
+                    content = @Content(schema = @Schema(implementation = FormVerify.class))
             ),
             responses = {
                     @ApiResponse(responseCode = "200",
@@ -73,8 +73,8 @@ public class AuthenticationController {
                     @ApiResponse(responseCode = "401", description = "Invalid credentials")
             }
     )
-    public ResponseEntity<APIResponse<AuthenticationDTO>> signIn(@RequestBody FormLoginDTO formLoginDTO, HttpServletRequest request) {
-        AuthenticationDTO authDTO = authenticationService.signIn(formLoginDTO);
+    public ResponseEntity<APIResponse<AuthenticationDTO>> signIn(@RequestBody FormVerify formVerify, HttpServletRequest request) {
+        AuthenticationDTO authDTO = authenticationService.signIn(formVerify);
         return ResponseEntity.ok(new APIResponse<>(
                 true,
                 "Authentication successful",

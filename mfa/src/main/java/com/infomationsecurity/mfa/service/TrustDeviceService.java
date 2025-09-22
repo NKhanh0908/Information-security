@@ -10,17 +10,17 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface TrustDeviceService {
-    TrustDevice create(Account account, String ip, String userAgent);
+    TrustDevice create(Account account, String ip, String userAgent, Boolean isVerify);
 
     TrustDeviceDTO update(TrustDevice trustDevice);
-
-    TrustDeviceDTO getTrustDeviceByAccount();
 
     TrustDevice getTrustDeviceById(Integer trustDeviceId);
 
     void updateStatus(TrustDevice trustDevice, Boolean statusVerified, Boolean statusActive);
 
-    TrustDevice createOrGetTrustDevice(Account account, RequestInfo requestInfo);
+    void updateDeviceVerify(Account account);
+
+    TrustDevice createOrGetTrustDevice(Account account, RequestInfo requestInfo, Boolean isVerify);
 
     PageDTO<TrustDeviceDTO> filter(TrustDeviceFilter filter, Integer page, Integer size);
 

@@ -7,6 +7,8 @@ import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
 import com.infomationsecurity.mfa.dto.response.deviceDTO.TrustDeviceDTO;
 import com.infomationsecurity.mfa.entity.Account;
 import com.infomationsecurity.mfa.entity.TrustDevice;
+import com.infomationsecurity.mfa.exception.CustomException;
+import com.infomationsecurity.mfa.exception.Error;
 import com.infomationsecurity.mfa.mapper.TrustDeviceMapper;
 import com.infomationsecurity.mfa.repository.TrustDeviceRepository;
 import com.infomationsecurity.mfa.service.AccountService;
@@ -41,7 +43,7 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
     }
 
     @Override
-    public TrustDevice create(Account account, String ip, String userAgent) {
+    public TrustDevice create(Account account, String ip, String userAgent, Boolean isVerify) {
         log.info("{} Creating trust device for account ID: {}", LOG_PREFIX, account.getAccountId());
 
         DeviceInfo deviceInfo = createDeviceInfo(ip, userAgent);
@@ -52,7 +54,7 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
             return existingDevice.get();
         }
 
-        return createNewTrustDevice(account, deviceInfo);
+        return createNewTrustDevice(account, deviceInfo, isVerify);
     }
 
     @Override
@@ -61,12 +63,6 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
         return null;
     }
 
-    @Override
-    public TrustDeviceDTO getTrustDeviceByAccount() {
-        AccountDTO accountDTO = accountService.getAccountAuth();
-        // TODO: Implement get trust device by account logic
-        return null;
-    }
 
     /**
      * @param trustDevice
@@ -84,6 +80,23 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
         if (statusActive != null) {
             trustDevice.setDeviceIsActive(statusActive);
         }
+        trustDeviceRepository.save(trustDevice);
+    }
+
+    /**
+     * @param account
+     */
+    @Override
+    public void updateDeviceVerify(Account account) {
+        RequestInfo requestInfo = extractRequestInfo();
+
+        DeviceInfo deviceInfo = createDeviceInfo(requestInfo.getIp(), requestInfo.getUserAgent());
+
+        TrustDevice trustDevice = findExistingTrustDevice(deviceInfo, account.getAccountId())
+                .orElseThrow(()-> new CustomException(Error.TRUST_DEVICE_NOT_FOUND));
+
+
+        trustDevice.setDeviceIsVerified(true);
         trustDeviceRepository.save(trustDevice);
     }
 
@@ -116,8 +129,8 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
     }
 
     @Override
-    public TrustDevice createOrGetTrustDevice(Account account, RequestInfo requestInfo) {
-        return create(account, requestInfo.getIp(), requestInfo.getUserAgent());
+    public TrustDevice createOrGetTrustDevice(Account account, RequestInfo requestInfo, Boolean isVerify) {
+        return create(account, requestInfo.getIp(), requestInfo.getUserAgent(), isVerify);
     }
 
     @Override
@@ -142,7 +155,7 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
                 accountId);
     }
 
-    private TrustDevice createNewTrustDevice(Account account, DeviceInfo deviceInfo) {
+    private TrustDevice createNewTrustDevice(Account account, DeviceInfo deviceInfo, Boolean isVerify) {
         log.info("{} Creating new trust device for IP: {}, Device: {}",
                 LOG_PREFIX, deviceInfo.getIp(), deviceInfo.getDeviceName());
 
@@ -150,6 +163,7 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
                 deviceInfo.getIp(),
                 deviceInfo.getDeviceName(),
                 deviceInfo.getLocation());
+        trustDevice.setDeviceIsVerified(isVerify);
         trustDevice.setAccount(account);
 
         return trustDeviceRepository.save(trustDevice);
@@ -227,6 +241,16 @@ public class TrustDeviceServiceImpl implements TrustDeviceService {
         public String getLocation() {
             return location;
         }
+    }
+
+    private RequestInfo extractRequestInfo() {
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        String ip = requestAttributes != null ? requestAttributes.getRequest().getRemoteAddr() : "unknown";
+        String userAgent = requestAttributes != null ? requestAttributes.getRequest().getHeader("User-Agent") : "unknown";
+        return RequestInfo.builder()
+                .ip(ip)
+                .userAgent(userAgent)
+                .build();
     }
 
     private static class DeviceDetector {

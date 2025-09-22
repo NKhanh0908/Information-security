@@ -25,7 +25,6 @@ public class TrustDeviceMapper {
                 .deviceIpAddress(ip)
                 .deviceLocation(location)
                 .deviceIsActive(true)
-                .deviceIsVerified(false)
                 .build();
     }
 

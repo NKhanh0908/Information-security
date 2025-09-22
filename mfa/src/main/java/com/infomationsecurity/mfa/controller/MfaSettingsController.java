@@ -1,5 +1,6 @@
 package com.infomationsecurity.mfa.controller;
 
+import com.infomationsecurity.mfa.dto.request.accountDTO.FormVerify;
 import com.infomationsecurity.mfa.dto.request.accountDTO.VerifyDeviceWithTOTP;
 import com.infomationsecurity.mfa.dto.request.userDTO.UserUpdateDTO;
 import com.infomationsecurity.mfa.dto.response.APIResponse;
@@ -62,7 +63,7 @@ public class MfaSettingsController {
         ));
     }
 
-    @GetMapping()
+    @PostMapping()
     @Operation(
             summary = "Get MFA settings",
             description = "Retrieve the current user's MFA settings",
@@ -76,8 +77,8 @@ public class MfaSettingsController {
                     @ApiResponse(responseCode = "404", description = "MFA settings not found")
             }
     )
-    public ResponseEntity<APIResponse<?>> getMfaSettings(HttpServletRequest request) {
-        var mfaSettingsDTO = mfaSettingsService.getMfaSettingsByAccount();
+    public ResponseEntity<APIResponse<?>> getMfaSettings(@RequestBody FormVerify formVerify, HttpServletRequest request) {
+        var mfaSettingsDTO = mfaSettingsService.getMfaSettingsByAccount(formVerify);
 
         return ResponseEntity.ok(new APIResponse<>(
                 true,

@@ -2,7 +2,7 @@ package com.infomationsecurity.mfa.service.impl;
 
 import com.infomationsecurity.mfa.dto.other.GitHubUserInfo;
 import com.infomationsecurity.mfa.dto.other.RequestInfo;
-import com.infomationsecurity.mfa.dto.request.accountDTO.FormLoginDTO;
+import com.infomationsecurity.mfa.dto.request.accountDTO.FormVerify;
 import com.infomationsecurity.mfa.dto.request.emailOTP.EmailResendOTP;
 import com.infomationsecurity.mfa.dto.request.emailOTP.EmailVerificationDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
@@ -60,13 +60,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     /**
-     * @param formLoginDTO
+     * @param formVerify
      * @return
      */
     @Override
-    public AuthenticationDTO signIn(FormLoginDTO formLoginDTO) {
+    public AuthenticationDTO signIn(FormVerify formVerify) {
         try {
-            String username = formLoginDTO.getUsername().trim().toLowerCase();
+            String username = formVerify.getUsername().trim().toLowerCase();
             log.info("{} Attempting to sign in user: {}", LOG_PREFIX, username);
 
             Account account = accountService.getAccountByUsername(username);
@@ -74,7 +74,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             String lockKey = username + ":" + requestInfo.getIp();
 
             validateAccountLockStatus(account, requestInfo, lockKey);
-            validatePassword(formLoginDTO.getPassword(), account, requestInfo, lockKey);
+            validatePassword(formVerify.getPassword(), account, requestInfo, lockKey);
 
             return processSuccessfulLogin(account, requestInfo, username);
         } catch (Exception e) {
@@ -133,7 +133,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             loginAttemptChecked.loginSucceeded(username + ":" + requestInfo.getIp());
             accountService.updateLastLoginTime(account);
 
-            TrustDevice trustDevice = trustDeviceService.createOrGetTrustDevice(account, requestInfo);
+            TrustDevice trustDevice = trustDeviceService.createOrGetTrustDevice(account, requestInfo, false);
 
             // Check if MFA is required for this device
             if (!requiresMfaVerification(account, trustDevice)) {
@@ -217,7 +217,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         MfaSettings mfaSettings = mfaSettingsService.getMfaSettingsByAccount(account.getAccountId());
 
-        if (mfaSettings.getMfaEnabled() && isFirstTimeLogin(trustDevice)) {
+        if (mfaSettings.getMfaEnabled() && !trustDevice.getDeviceIsVerified()) {
             log.info("{} Device is already verified: {}", LOG_PREFIX, trustDevice.getDeviceName());
             return false;
         }

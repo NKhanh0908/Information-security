@@ -1,6 +1,7 @@
 package com.infomationsecurity.mfa.service.impl;
 
 import com.infomationsecurity.mfa.dto.other.RequestInfo;
+import com.infomationsecurity.mfa.dto.request.accountDTO.FormVerify;
 import com.infomationsecurity.mfa.dto.request.accountDTO.VerifyDeviceWithTOTP;
 import com.infomationsecurity.mfa.dto.request.setting.MfaSettingUpdate;
 import com.infomationsecurity.mfa.dto.response.settingDTO.MfaSettingsDTO;
@@ -118,12 +119,19 @@ public class MfaSettingsServiceImpl implements MfaSettingsService {
 
     @Transactional
     @Override
-    public MfaSettingsDTO getMfaSettingsByAccount() {
+    public MfaSettingsDTO getMfaSettingsByAccount(FormVerify formVerify) {
         log.info("{} Get MFA settings for account", LOG_PREFIX);
 
-        AccountDTO accountDTO = accountService.getAccountAuth();
+        Integer accountId = null;
 
-        MfaSettings mfaSettings = getMfaSettingsByAccount(accountDTO.getAccountId());
+        if(formVerify.getUsername() != null){
+            accountId = accountService.getAccountByUsername(formVerify.getUsername()).getAccountId();
+        }
+        else {
+            accountId = accountService.getAccountAuth().getAccountId();
+        }
+
+        MfaSettings mfaSettings = getMfaSettingsByAccount(accountId);
 
         return mfaSettingsMapper.entityToDTO(mfaSettings);
     }

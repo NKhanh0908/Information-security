@@ -1,12 +1,8 @@
 package com.infomationsecurity.mfa.controller;
 
-import com.infomationsecurity.mfa.dto.request.accountDTO.RefreshTokenDTO;
 import com.infomationsecurity.mfa.dto.response.APIResponse;
 import com.infomationsecurity.mfa.dto.request.accountDTO.AccountCreateDTO;
-import com.infomationsecurity.mfa.dto.request.accountDTO.FormLoginDTO;
-import com.infomationsecurity.mfa.dto.request.oauth2.OAuth2RequestDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
-import com.infomationsecurity.mfa.dto.response.accountDTO.AuthenticationDTO;
 import com.infomationsecurity.mfa.service.AccountService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class FormLoginDTO {
+public class FormVerify {
     @NotBlank(message = "Username is required")
     private String username;
 

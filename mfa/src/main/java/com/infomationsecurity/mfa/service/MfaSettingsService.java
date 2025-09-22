@@ -1,6 +1,7 @@
 package com.infomationsecurity.mfa.service;
 
 import com.infomationsecurity.mfa.dto.other.RequestInfo;
+import com.infomationsecurity.mfa.dto.request.accountDTO.FormVerify;
 import com.infomationsecurity.mfa.dto.request.accountDTO.VerifyDeviceWithTOTP;
 import com.infomationsecurity.mfa.dto.request.setting.MfaSettingUpdate;
 import com.infomationsecurity.mfa.dto.response.settingDTO.MfaSettingsDTO;
@@ -16,7 +17,7 @@ public interface MfaSettingsService {
 
     MfaSettingsDTO update(MfaSettingUpdate mfaSettingUpdate, Integer mfaId);
 
-    MfaSettingsDTO getMfaSettingsByAccount();
+    MfaSettingsDTO getMfaSettingsByAccount(FormVerify formVerify);
 
     MfaSettings getMfaSettingsByAccount(Integer accountId);
 

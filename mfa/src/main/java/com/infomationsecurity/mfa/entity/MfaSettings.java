@@ -53,7 +53,7 @@ public class MfaSettings {
     private List<String> backupCodes;
 
     @Column(name = "mfa_email_enabled")
-    private Boolean mfaEmailEnabled = false;
+    private Boolean mfaEmailEnabled = true;
 
     @Column(name = "mfa_webauthn_enabled")
     private Boolean mfaWebauthnEnabled = false;

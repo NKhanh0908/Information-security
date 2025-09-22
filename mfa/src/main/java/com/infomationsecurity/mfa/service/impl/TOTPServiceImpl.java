@@ -71,15 +71,11 @@ public class TOTPServiceImpl implements TOTPService {
 
             String qrCodeImage = qrCodeGenerator.generateQRCodeBase64(qrCodeUrl, 200, 200);
 
-            String[] backupCodes = "a123456,b123456,c123456,d123456,e123456".split(",");
-
             mfaSettingsService.updateSecretKey(secretKey);
 
             return TOTPRegistrationDTO.builder()
-                    .secretKey(secretKey)
                     .qrCodeUrl(qrCodeUrl)
                     .qrCodeImage("data:image/png;base64," + qrCodeImage)
-                    .backupCodes(backupCodes)
                     .message("TOTP registration successful. Please scan QR code with Google Authenticator.")
                     .build();
 

@@ -12,7 +12,6 @@ public class MfaSettingsMapper {
                 .mfaEnabled(mfaSettings.getMfaEnabled())
                 .mfaPrimaryMethod(mfaSettings.getMfaPrimaryMethod().name())
                 .mfaBackupMethod(mfaSettings.getMfaBackupMethod() != null ? mfaSettings.getMfaBackupMethod().name() : null)
-                .mfaTotpSecretKey(mfaSettings.getMfaTotpSecretKey() != null ? mfaSettings.getMfaTotpSecretKey() : null)
                 .mfaTotpEnable(mfaSettings.getMfaTotpEnable())
                 .mfaEmailEnabled(mfaSettings.getMfaEmailEnabled())
                 .mfaWebauthnEnabled(mfaSettings.getMfaWebauthnEnabled())
