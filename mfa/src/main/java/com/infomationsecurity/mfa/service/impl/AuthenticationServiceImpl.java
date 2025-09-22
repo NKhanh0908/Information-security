@@ -3,6 +3,8 @@ package com.infomationsecurity.mfa.service.impl;
 import com.infomationsecurity.mfa.dto.other.GitHubUserInfo;
 import com.infomationsecurity.mfa.dto.other.RequestInfo;
 import com.infomationsecurity.mfa.dto.request.accountDTO.FormLoginDTO;
+import com.infomationsecurity.mfa.dto.request.emailOTP.EmailResendOTP;
+import com.infomationsecurity.mfa.dto.request.emailOTP.EmailVerificationDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AuthenticationDTO;
 import com.infomationsecurity.mfa.entity.Account;
@@ -35,6 +37,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final MfaSettingsService mfaSettingsService;
     private final TokenService tokenService;
     private final GithubUtils githubUtils;
+    private final MailService mailService;
 
     public AuthenticationServiceImpl(@Lazy AccountService accountService,
                                       PasswordEncoder passwordEncoder,
@@ -43,7 +46,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                                       TrustDeviceService trustDeviceService,
                                       MfaSettingsService mfaSettingsService,
                                       TokenService tokenService,
-                                      GithubUtils githubUtils) {
+                                      GithubUtils githubUtils,
+                                      MailService mailService) {
         this.accountService = accountService;
         this.passwordEncoder = passwordEncoder;
         this.loginAttemptChecked = loginAttemptChecked;
@@ -52,6 +56,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         this.mfaSettingsService = mfaSettingsService;
         this.tokenService = tokenService;
         this.githubUtils = githubUtils;
+        this.mailService = mailService;
     }
 
     /**
@@ -152,6 +157,32 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
     }
 
+    /**
+     * @return
+     */
+    @Override
+    public void sendEmailNotificationVerify() {
+        AccountDTO accountDTO = accountService.getAccountAuth();
+        EmailResendOTP emailResendOTP = new EmailResendOTP();
+        emailResendOTP.setEmail(accountDTO.getAccountEmail());
+
+        mailService.sendVerificationOTPEmail(emailResendOTP);
+    }
+
+    /**
+     * @param emailVerificationDTO
+     * @return
+     */
+    @Override
+    public Boolean verifyEmail(EmailVerificationDTO emailVerificationDTO) {
+
+        AccountDTO accountDTO = accountService.getAccountAuth();
+
+        emailVerificationDTO.setEmail(accountDTO.getAccountEmail());
+
+        return mailService.verifyEmail(emailVerificationDTO);
+    }
+
     private AuthenticationDTO triggerMfaProcess(Account account, TrustDevice trustDevice) {
         try {
             log.info("{} Triggering MFA process for account: {} on device: {}",
@@ -186,7 +217,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         MfaSettings mfaSettings = mfaSettingsService.getMfaSettingsByAccount(account.getAccountId());
 
-        if (mfaSettings.getMfaEnabled() && !isFirstTimeLogin(trustDevice)) {
+        if (mfaSettings.getMfaEnabled() && isFirstTimeLogin(trustDevice)) {
             log.info("{} Device is already verified: {}", LOG_PREFIX, trustDevice.getDeviceName());
             return false;
         }

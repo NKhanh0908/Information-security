@@ -32,7 +32,7 @@ public class MfaSettings {
     private Account account;
 
     @Column(name = "mfa_enabled")
-    private Boolean mfaEnabled = false;
+    private Boolean mfaEnabled = true;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "mfa_primary_method", nullable = false)

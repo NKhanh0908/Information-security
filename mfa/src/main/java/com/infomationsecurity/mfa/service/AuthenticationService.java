@@ -4,6 +4,7 @@ import com.infomationsecurity.mfa.dto.other.RequestInfo;
 import com.infomationsecurity.mfa.dto.request.accountDTO.FormLoginDTO;
 import com.infomationsecurity.mfa.dto.request.accountDTO.RefreshTokenDTO;
 import com.infomationsecurity.mfa.dto.request.accountDTO.VerifyDeviceWithTOTP;
+import com.infomationsecurity.mfa.dto.request.emailOTP.EmailVerificationDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AuthenticationDTO;
 import com.infomationsecurity.mfa.entity.Account;
 
@@ -15,4 +16,8 @@ public interface AuthenticationService {
     AuthenticationDTO authWithGitHub(String authorizationCode);
 
     AuthenticationDTO processSuccessfulLogin(Account account, RequestInfo requestInfo, String username);
+
+    void sendEmailNotificationVerify();
+
+    Boolean verifyEmail(EmailVerificationDTO emailVerificationDTO);
 }

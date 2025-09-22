@@ -2,6 +2,7 @@ package com.infomationsecurity.mfa.controller;
 
 import com.infomationsecurity.mfa.dto.request.accountDTO.FormLoginDTO;
 import com.infomationsecurity.mfa.dto.request.accountDTO.PasswordVerify;
+import com.infomationsecurity.mfa.dto.request.emailOTP.EmailVerificationDTO;
 import com.infomationsecurity.mfa.dto.request.oauth2.OAuth2RequestDTO;
 import com.infomationsecurity.mfa.dto.response.APIResponse;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AuthenticationDTO;
@@ -105,6 +106,58 @@ public class AuthenticationController {
                 true,
                 "Password verification result",
                 isValid,
+                null,
+                request.getRequestURI()));
+    }
+
+    @PostMapping("/send-email-notification-verify")
+    @Operation(
+            summary = "Send Email Notification for Verification",
+            description = "Sends an email notification to the user for verification purposes",
+            responses = {
+                    @ApiResponse(responseCode = "200",
+                            description = "Email notification sent successfully",
+                            content = @Content(schema = @Schema(implementation = Void.class))
+                    ),
+                    @ApiResponse(responseCode = "400", description = "Failed to send email notification")
+            }
+    )
+    public ResponseEntity<APIResponse<Void>> sendEmailNotificationVerify(HttpServletRequest request) {
+        authenticationService.sendEmailNotificationVerify();
+        return ResponseEntity.ok(new APIResponse<>(
+                true,
+                "Email notification sent successfully",
+                null,
+                null,
+                request.getRequestURI()));
+    }
+
+    @PostMapping("/verify-email")
+    @Operation(
+            summary = "Verify Email OTP",
+            description = "Verifies the OTP sent to the user's email",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Email and OTP for verification",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = EmailVerificationDTO.class))
+            ),
+            responses = {
+                    @ApiResponse(responseCode = "200",
+                            description = "Email OTP verified successfully",
+                            content = @Content(schema = @Schema(implementation = Boolean.class))
+                    ),
+                    @ApiResponse(responseCode = "400",
+                            description = "Invalid OTP or email",
+                            content = @Content
+                    )
+            }
+    )
+    public ResponseEntity<APIResponse<Boolean>> verifyEmail(@RequestBody EmailVerificationDTO emailVerificationDTO, HttpServletRequest request) {
+        Boolean result = authenticationService.verifyEmail(emailVerificationDTO);
+        return ResponseEntity.ok(new APIResponse<>(
+                result,
+                result ? "Email OTP verified successfully" : "Invalid OTP or email",
+                result,
                 null,
                 request.getRequestURI()));
     }

@@ -3,6 +3,7 @@ package com.infomationsecurity.mfa.service.impl;
 import com.infomationsecurity.mfa.dto.other.RequestInfo;
 import com.infomationsecurity.mfa.dto.request.emailOTP.EmailResendOTP;
 import com.infomationsecurity.mfa.dto.request.emailOTP.EmailVerificationDTO;
+import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
 import com.infomationsecurity.mfa.entity.Account;
 import com.infomationsecurity.mfa.entity.MfaSettings;
 import com.infomationsecurity.mfa.entity.TrustDevice;
