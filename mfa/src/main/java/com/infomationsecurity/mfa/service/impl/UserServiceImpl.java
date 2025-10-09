@@ -8,9 +8,12 @@ import com.infomationsecurity.mfa.entity.User;
 import com.infomationsecurity.mfa.mapper.UserMapper;
 import com.infomationsecurity.mfa.repository.UserRepository;
 import com.infomationsecurity.mfa.service.AccountService;
+import com.infomationsecurity.mfa.service.EncryptionService;
 import com.infomationsecurity.mfa.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +25,9 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
 
     private final AccountService accountService;
+
+    @Autowired
+    private EncryptionService encryptionService;
 
     public UserServiceImpl(UserRepository userRepository, UserMapper userMapper,
                            @Lazy AccountService accountService) {
@@ -37,53 +43,96 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
-    @Override
-    public UserDTO update(UserUpdateDTO userUpdateDTO) {
-        // Đây là luôn lấy User dựa theo account hiện tại trong SecurityContext, chứ không dựa vào JSON gửi đi .
-        // // Lấy ra account hiện tại 
-        // AccountDTO acc = accountService.getAccountAuth(); // phương thức lấy ra account hiện tại
-        // // Tìm thông tin account thông qua id của user
-        // User oldUser = userRepository.findByAccountId(acc.getAccountId()); // Thông tin user thể hiện đầy đủ trong file user bên trong entity
+    // @Override
+    // public UserDTO update(UserUpdateDTO userUpdateDTO) {
+    //     // Đây là luôn lấy User dựa theo account hiện tại trong SecurityContext, chứ không dựa vào JSON gửi đi .
+    //     // // Lấy ra account hiện tại 
+    //     // AccountDTO acc = accountService.getAccountAuth(); // phương thức lấy ra account hiện tại
+    //     // // Tìm thông tin account thông qua id của user
+    //     // User oldUser = userRepository.findByAccountId(acc.getAccountId()); // Thông tin user thể hiện đầy đủ trong file user bên trong entity
     
-        // // Kiểm tra xem có tìm ra thông tin user hay không
-        // if(oldUser == null){
-        //     throw new RuntimeException("User not found for account id: " + acc.getAccountId()); // Thông báo không tìm thấy thông tin user
-        // }
+    //     // // Kiểm tra xem có tìm ra thông tin user hay không
+    //     // if(oldUser == null){
+    //     //     throw new RuntimeException("User not found for account id: " + acc.getAccountId()); // Thông báo không tìm thấy thông tin user
+    //     // }
 
-        // // Không phải thông tin nào cũng sẽ thay đổi, kiểm tra xem thông tin nào cần thay đổi sẽ cập nhật lại còn bỏ trống sẽ chỉ cập nhật những thông tin truyền vào 
-        // // Phương thức isBlank để kiểm tra trường nhập liệu kiểu String có empty hay không, chỉ kiểm tra được kiểu String
-        // if (userUpdateDTO.getUserName() != null && !userUpdateDTO.getUserName().isBlank()) {
-        //     oldUser.setUserName(userUpdateDTO.getUserName());
-        // }
+    //     // // Không phải thông tin nào cũng sẽ thay đổi, kiểm tra xem thông tin nào cần thay đổi sẽ cập nhật lại còn bỏ trống sẽ chỉ cập nhật những thông tin truyền vào 
+    //     // // Phương thức isBlank để kiểm tra trường nhập liệu kiểu String có empty hay không, chỉ kiểm tra được kiểu String
+    //     // if (userUpdateDTO.getUserName() != null && !userUpdateDTO.getUserName().isBlank()) {
+    //     //     oldUser.setUserName(userUpdateDTO.getUserName());
+    //     // }
 
         
-        // Đây là cách xử lí khi gửi thông tin user theo JSON
+    //     // Đây là cách xử lí khi gửi thông tin user theo JSON
+    //     User oldUser = userRepository.findByUserName(userUpdateDTO.getUserName());
+    //     if (oldUser == null) {
+    //         throw new RuntimeException("User not found: " + userUpdateDTO.getUserName());
+    //     }
+
+        
+    //     if (userUpdateDTO.getUserGender() != null) {
+    //         oldUser.setUserGender(userUpdateDTO.getUserGender());
+    //     }
+        
+    //     if (userUpdateDTO.getUserDateOfBirth() != null) {
+    //         oldUser.setUserDateOfBirth(userUpdateDTO.getUserDateOfBirth());
+    //     }
+        
+    //     if (userUpdateDTO.getUserAddress() != null && !userUpdateDTO.getUserAddress().isBlank()) {
+    //         oldUser.setUserAddress(userUpdateDTO.getUserAddress());
+    //     }
+        
+    //     if (userUpdateDTO.getUserPhone() != null && !userUpdateDTO.getUserPhone().isBlank()) {
+    //         oldUser.setUserPhone(userUpdateDTO.getUserPhone());
+    //     }
+        
+
+    //     // Cập nhật thông tin user mới sau khi thay đổi
+    //     User newUser = userRepository.save(oldUser);
+    //     return userMapper.entityToDTO(newUser); // Chuyển đổi entity sang DTO sau khi cập nhật thông tin và sẽ luôn trả về đúng với thông tin trên UserDTO
+    // }
+
+    @Override
+    public UserDTO update(UserUpdateDTO userUpdateDTO) {
         User oldUser = userRepository.findByUserName(userUpdateDTO.getUserName());
         if (oldUser == null) {
             throw new RuntimeException("User not found: " + userUpdateDTO.getUserName());
         }
 
-        
         if (userUpdateDTO.getUserGender() != null) {
             oldUser.setUserGender(userUpdateDTO.getUserGender());
         }
-        
+
         if (userUpdateDTO.getUserDateOfBirth() != null) {
             oldUser.setUserDateOfBirth(userUpdateDTO.getUserDateOfBirth());
         }
-        
-        if (userUpdateDTO.getUserAddress() != null && !userUpdateDTO.getUserAddress().isBlank()) {
-            oldUser.setUserAddress(userUpdateDTO.getUserAddress());
-        }
-        
-        if (userUpdateDTO.getUserPhone() != null && !userUpdateDTO.getUserPhone().isBlank()) {
-            oldUser.setUserPhone(userUpdateDTO.getUserPhone());
-        }
-        
 
-        // Cập nhật thông tin user mới sau khi thay đổi
+        if (userUpdateDTO.getUserAddress() != null && !userUpdateDTO.getUserAddress().isBlank()) {
+            oldUser.setUserAddress(encryptionService.encrypt(userUpdateDTO.getUserAddress()));
+        }
+
+        if (userUpdateDTO.getUserPhone() != null && !userUpdateDTO.getUserPhone().isBlank()) {
+            oldUser.setUserPhone(encryptionService.encrypt(userUpdateDTO.getUserPhone()));
+        }
+
         User newUser = userRepository.save(oldUser);
-        return userMapper.entityToDTO(newUser); // Chuyển đổi entity sang DTO sau khi cập nhật thông tin và sẽ luôn trả về đúng với thông tin trên UserDTO
+
+        // Nếu muốn trả về DTO với thông tin *giải mã* (thông thường UI cần thấy số điện thoại rõ)
+        UserDTO dto = userMapper.entityToDTO(newUser);
+        // Giải mã những field cần hiển thị rõ
+        try {
+            dto.setUserPhone(encryptionService.decrypt(newUser.getUserPhone()));
+        } catch (Exception ex) {
+            // xử lý nếu giải mã thất bại — tùy bạn có muốn null hoặc giữ nguyên chuỗi mã hóa
+            dto.setUserPhone(null);
+        }
+        try {
+            dto.setUserAddress(encryptionService.decrypt(newUser.getUserAddress()));
+        } catch (Exception ex) {
+            dto.setUserAddress(null);
+        }
+
+        return dto;
     }
 
     @Override
