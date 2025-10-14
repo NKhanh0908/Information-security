@@ -31,26 +31,16 @@ public class TokenController {
     private final TokenService tokenService;
 
     @PostMapping("/refresh-token")
-    @Operation(
-            summary = "Refresh Access Token",
-            description = "Generates a new access token using the 'refreshToken' sent in an HttpOnly cookie. The request body should be empty.",
+    @Operation(summary = "Refresh Access Token", description = "Generates a new access token using the 'refreshToken' sent in an HttpOnly cookie. The request body should be empty.",
             // 1. Xóa @RequestBody và thay bằng @Parameter để mô tả cookie
             parameters = {
-                    @Parameter(name = "refreshToken",
-                            in = ParameterIn.COOKIE,
-                            description = "The refresh token stored in an HttpOnly cookie.",
-                            required = true,
-                            schema = @Schema(type = "string"))
-            },
-            responses = {
-                    @ApiResponse(responseCode = "200",
-                            description = "Token refreshed successfully",
-                            content = @Content(schema = @Schema(implementation = AuthenticationDTO.class))
-                    ),
+                    @Parameter(name = "refreshToken", in = ParameterIn.COOKIE, description = "The refresh token stored in an HttpOnly cookie.", required = true, schema = @Schema(type = "string"))
+            }, responses = {
+                    @ApiResponse(responseCode = "200", description = "Token refreshed successfully", content = @Content(schema = @Schema(implementation = AuthenticationDTO.class))),
                     @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token")
-            }
-    )
-    public ResponseEntity<APIResponse<AuthenticationDTO>> refreshToken(@CookieValue(name = "refreshToken") String refreshTokenString, HttpServletRequest request) {
+            })
+    public ResponseEntity<APIResponse<AuthenticationDTO>> refreshToken(
+            @CookieValue(name = "refreshToken") String refreshTokenString, HttpServletRequest request) {
 
         try {
             if (refreshTokenString == null || refreshTokenString.isEmpty()) {
@@ -61,12 +51,14 @@ public class TokenController {
 
             AuthenticationDTO authDTO = tokenService.refreshToken(refreshTokenString);
 
-            ResponseCookie newRefreshTokenCookie = ResponseCookie.from("refreshToken", authDTO.getRefreshToken())
-                    .httpOnly(true)
-                    .secure(true) // Nhớ cấu hình linh hoạt cho môi trường dev/prod
-                    .path("/api/v1/")
-                    .maxAge(7 * 24 * 60 * 60)
-                    .sameSite("Strict")
+            ResponseCookie newRefreshTokenCookie = ResponseCookie
+                    .from("refreshToken", authDTO.getRefreshToken())
+                    .httpOnly(true) // Quan trọng nhất: Chống XSS
+                    .secure(false) // Chỉ gửi qua HTTPS. Tham khảo spring profile.
+                    .path("/") // Chỉ gửi đến các API xác thực
+                    .maxAge(7 * 24 * 60 * 60) // Thời gian sống (7 ngày)
+                    .sameSite("Lax") // Chống CSRF
+                    .domain("localhost")
                     .build();
 
             authDTO.setRefreshToken(null);
@@ -86,8 +78,7 @@ public class TokenController {
                     "Invalid or expired refresh token.",
                     null,
                     List.of(e.getMessage()),
-                    request.getRequestURI()
-            ));
+                    request.getRequestURI()));
         }
     }
 }
