@@ -62,6 +62,7 @@ public class TokenController {
                     .build();
 
             authDTO.setRefreshToken(null);
+            log.info("Token Controller create Successfully");
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, newRefreshTokenCookie.toString())

@@ -56,6 +56,8 @@ public class AuthenticationController {
                         HttpServletRequest request) {
                 AuthenticationDTO authDTO = authenticationService.signIn(formVerify);
 
+                log.info("[Auth Controller]: {}", authDTO.toString());
+
                 ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", authDTO.getRefreshToken())
                                 .httpOnly(true) // Quan trọng nhất: Chống XSS
                                 .secure(false) // Chỉ gửi qua HTTPS. Tham khảo spring profile.
