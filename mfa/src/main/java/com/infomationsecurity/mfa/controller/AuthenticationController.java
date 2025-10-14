@@ -15,6 +15,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -75,7 +77,20 @@ public class AuthenticationController {
     )
     public ResponseEntity<APIResponse<AuthenticationDTO>> signIn(@RequestBody FormVerify formVerify, HttpServletRequest request) {
         AuthenticationDTO authDTO = authenticationService.signIn(formVerify);
-        return ResponseEntity.ok(new APIResponse<>(
+
+        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", authDTO.getRefreshToken())
+                .httpOnly(true)       // Quan trọng nhất: Chống XSS
+                .secure(false)         // Chỉ gửi qua HTTPS. Tham khảo spring profile.
+                .path("/") // Chỉ gửi đến các API xác thực
+                .maxAge(7 * 24 * 60 * 60) // Thời gian sống (7 ngày)
+                .sameSite("Lax")     // Chống CSRF
+                .domain("localhost")
+                .build();
+
+        authDTO.setRefreshToken(null);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                .body(new APIResponse<>(
                 true,
                 "Authentication successful",
                 authDTO,
@@ -160,5 +175,40 @@ public class AuthenticationController {
                 result,
                 null,
                 request.getRequestURI()));
+    }
+
+    @PostMapping("/logout")
+    @Operation(
+            summary = "Logout",
+            description = "Invalidates the user's session by clearing the refresh token cookie. Requires a valid Access Token in the Authorization header.",
+            responses = {
+                    @ApiResponse(responseCode = "200",
+                            description = "Logout successful",
+                            content = @Content(schema = @Schema(implementation = APIResponse.class))
+                    ),
+                    @ApiResponse(responseCode = "401", description = "User is not authenticated")
+            }
+    )
+    public ResponseEntity<APIResponse<String>> logout(HttpServletRequest request) {
+        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/api/v1/") // QUAN TRỌNG: Phải khớp chính xác với path khi tạo cookie
+                .maxAge(0) // << ĐIỂM MẤU CHỐT: Set thời gian sống bằng 0 để trình duyệt xóa ngay lập tức
+                .sameSite("Strict")
+                .build();
+
+        // Tùy chọn: Bạn có thể thêm logic ở đây để vô hiệu hóa Access Token hiện tại
+        // nếu bạn có một danh sách từ chối (token denylist) ở phía server.
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                .body(new APIResponse<>(
+                        true,
+                        "Logout successful",
+                        "User has been logged out.",
+                        null,
+                        request.getRequestURI()
+                ));
     }
 }
