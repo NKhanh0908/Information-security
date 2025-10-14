@@ -19,6 +19,8 @@ public interface MfaSettingsService {
 
     MfaSettingsDTO getMfaSettingsByAccount(FormVerify formVerify);
 
+    MfaSettingsDTO getMfaSettingCurrentUser();
+
     MfaSettings getMfaSettingsByAccount(Integer accountId);
 
     AuthenticationDTO verifyLoginWithTOTP(VerifyDeviceWithTOTP verifyDeviceWithTOTP);

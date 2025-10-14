@@ -137,6 +137,14 @@ public class MfaSettingsServiceImpl implements MfaSettingsService {
     }
 
     /**
+     * @return
+     */
+    @Override
+    public MfaSettingsDTO getMfaSettingCurrentUser() {
+        return null;
+    }
+
+    /**
      * Retrieves MFA settings for a specific account.
      * @param accountId
      * @return

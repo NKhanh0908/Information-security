@@ -21,8 +21,8 @@ import java.util.stream.Collectors;
 @Component
 public class JwtTokenUtil {
 
-    private final SecretKey secretKeyForAccessToken ;
-    private final SecretKey secretKeyForRefreshToken = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private final SecretKey secretKeyForAccessToken = Keys.secretKeyFor(SignatureAlgorithm.HS256) ;
+    private final SecretKey secretKeyForRefreshToken ;
 
     private final long accessTokenExpiration;
     private final long refreshTokenExpiration;
@@ -33,7 +33,7 @@ public class JwtTokenUtil {
             @Value("${jwt.refresh-expiration:604800000}") long refreshTokenExpiration
     ) {
         byte[] keyBytes = Base64.getDecoder().decode(jwtSecret.getBytes(StandardCharsets.UTF_8));
-        this.secretKeyForAccessToken = new SecretKeySpec(keyBytes, "HmacSHA256");
+        this.secretKeyForRefreshToken = new SecretKeySpec(keyBytes, "HmacSHA256");
         this.accessTokenExpiration = accessTokenExpiration;
         this.refreshTokenExpiration = refreshTokenExpiration;
     }

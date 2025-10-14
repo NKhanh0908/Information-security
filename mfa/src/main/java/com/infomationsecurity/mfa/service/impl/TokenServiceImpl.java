@@ -29,14 +29,13 @@ public class TokenServiceImpl implements TokenService {
         this.accountService = accountService;
     }
     /**
-     * @param refreshTokenDTO
+     * @param refreshToken
      * @return
      */
     @Override
-    public AuthenticationDTO refreshToken(RefreshTokenDTO refreshTokenDTO) {
+    public AuthenticationDTO refreshToken(String refreshToken) {
         log.info("{} Refreshing token for user", LOG_PREFIX);
         try {
-            String refreshToken = refreshTokenDTO.getRefreshToken();
             validateRefreshToken(refreshToken);
 
             String username = jwtTokenUtil.extractTokenGetUsername(refreshToken);
