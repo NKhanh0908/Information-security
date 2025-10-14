@@ -1,5 +1,9 @@
 package com.infomationsecurity.mfa.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.infomationsecurity.mfa.dto.response.APIResponse;
+import com.infomationsecurity.mfa.exception.CustomException;
+import com.infomationsecurity.mfa.exception.Error;
 import com.infomationsecurity.mfa.service.impl.OurUserDetailsService;
 import com.infomationsecurity.mfa.util.JwtTokenUtil;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -8,6 +12,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,6 +22,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -48,7 +54,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UserDetails userDetails = ourUserDetailsService.loadUserByUsername(userEmail);
 
                 if (!jwtTokenUtil.isTokenValid(jwtToken, userDetails)) {
-                    throw new RuntimeException("Token is INVALID");
+                    sendErrorResponse(response, Error.JWT_EXPIRED);
+                    return;
                 }
 
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
@@ -64,10 +71,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             filterChain.doFilter(request, response);
         } catch (ExpiredJwtException e) {
-            throw new RuntimeException("Token is EXPIRED");
+            logger.info("Token has expired");
+            sendErrorResponse(response, Error.JWT_EXPIRED);
         } catch (MalformedJwtException | IllegalArgumentException e) {
-            throw new RuntimeException("Token is MALFORMED");
+            logger.warn("Malformed or invalid JWT token", e);
+            sendErrorResponse(response, Error.JWT_MALFORMED);
         }
+    }
+
+    // Phương thức helper để tạo response lỗi
+    private void sendErrorResponse(HttpServletResponse response, Error error) throws IOException {
+        response.setStatus(error.getStatusCode().value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+
+        // Tạo một object response tương tự như trong CustomizedResponseEntityExceptionHandler
+        APIResponse<Object> apiResponse = new APIResponse<>(
+                false,
+                error.getMessage(),
+                null,
+                Collections.singletonList(error.getMessage()),
+                null // request.getDescription(false) không có sẵn ở đây
+        );
+
+        new ObjectMapper().writeValue(response.getWriter(), apiResponse);
     }
 
 }
