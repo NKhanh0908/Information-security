@@ -10,5 +10,7 @@ public interface BackupCodeService {
 
     void generateBackupCodes();
 
+    void deleteBackupCodes();
+
     List<String> getBackupCodes();
 }

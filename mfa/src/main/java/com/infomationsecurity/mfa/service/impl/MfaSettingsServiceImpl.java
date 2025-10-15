@@ -72,8 +72,14 @@ public class MfaSettingsServiceImpl implements MfaSettingsService {
     public MfaSettingsDTO update(MfaSettingUpdate mfaSettingUpdate, Integer mfaId) {
         log.info("{} Updating MFA settings with ID: {}", LOG_PREFIX, mfaId);
 
-        MfaSettings mfaSettings = mfaSettingsRepository.findById(mfaId)
-                .orElseThrow(() -> new CustomException(Error.MFA_SETTINGS_NOT_FOUND));
+        MfaSettings mfaSettings = null;
+        if (mfaId != null) {
+            mfaSettings = mfaSettingsRepository.findById(mfaId)
+                    .orElseThrow(() -> new CustomException(Error.MFA_SETTINGS_NOT_FOUND));
+        }else{
+            AccountDTO account = accountService.getAccountAuth();
+            mfaSettings = getMfaSettingsByAccount(account.getAccountId());
+        }
 
         // Update boolean flags
         if (mfaSettingUpdate.getMfaEnabled() != null) {

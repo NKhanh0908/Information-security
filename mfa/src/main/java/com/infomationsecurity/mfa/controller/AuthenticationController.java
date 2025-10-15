@@ -3,6 +3,7 @@ package com.infomationsecurity.mfa.controller;
 import com.infomationsecurity.mfa.dto.request.accountDTO.FormVerify;
 import com.infomationsecurity.mfa.dto.request.accountDTO.PasswordVerify;
 import com.infomationsecurity.mfa.dto.request.emailOTP.EmailVerificationDTO;
+import com.infomationsecurity.mfa.dto.request.emailOTP.VerifyOTP;
 import com.infomationsecurity.mfa.dto.request.oauth2.OAuth2RequestDTO;
 import com.infomationsecurity.mfa.dto.response.APIResponse;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AuthenticationDTO;
@@ -107,6 +108,21 @@ public class AuthenticationController {
                                 null,
                                 null,
                                 request.getRequestURI()));
+        }
+
+        @PostMapping("/verify-otp")
+        @Operation(summary = "Verify Email for Verification", description = "Veirfy an email notification to the user for verification purposes", responses = {
+                @ApiResponse(responseCode = "200", description = "Email notification sent successfully", content = @Content(schema = @Schema(implementation = VerifyOTP.class))),
+                @ApiResponse(responseCode = "400", description = "Failed to send email notification")
+        })
+        public ResponseEntity<APIResponse<Boolean>> verifyOtp(@RequestBody VerifyOTP verifyOTP, HttpServletRequest request) {
+            Boolean isVerify = authenticationService.verifyOtp(verifyOTP);
+            return ResponseEntity.ok(new APIResponse<>(
+                    true,
+                    "Email notification verify status",
+                    isVerify,
+                    null,
+                    request.getRequestURI()));
         }
 
         @PostMapping("/verify-email")

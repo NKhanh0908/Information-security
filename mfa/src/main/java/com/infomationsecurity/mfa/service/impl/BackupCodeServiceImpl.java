@@ -64,6 +64,19 @@ public class BackupCodeServiceImpl implements BackupCodeService {
     }
 
     /**
+     *
+     */
+    @Override
+    public void deleteBackupCodes() {
+        AccountDTO accountDTO = accountService.getAccountAuth();
+
+        MfaSettings mfaSettings = mfaSettingsService.getMfaSettingsByAccount(accountDTO.getAccountId());
+
+        mfaSettings.setBackupCodes(null);
+        repository.save(mfaSettings);
+    }
+
+    /**
      * @return
      */
     @Override

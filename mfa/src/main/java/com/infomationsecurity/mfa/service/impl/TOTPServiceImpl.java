@@ -1,6 +1,7 @@
 package com.infomationsecurity.mfa.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.infomationsecurity.mfa.dto.request.setting.MfaSettingUpdate;
 import com.infomationsecurity.mfa.dto.request.totpDTO.TOTPVerificationDTO;
 import com.infomationsecurity.mfa.dto.response.TOTPRegistrationDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
@@ -83,6 +84,27 @@ public class TOTPServiceImpl implements TOTPService {
             log.error("Error registering TOTP for user: {}", accountDTO.getAccountUsername(), e);
             throw new CustomException(Error.TOTP_REGISTRATION_FAILED);
         }
+    }
+
+    /**
+     * @param verificationDTO
+     * @return
+     */
+    @Override
+    public Boolean verifyRegisterTOTP(TOTPVerificationDTO verificationDTO) {
+        log.info("Verifying TOTP for account");
+
+        Boolean result = verifyTOTP(verificationDTO);
+
+        if (result) {
+            MfaSettingUpdate mfaSettingUpdate = new MfaSettingUpdate();
+            mfaSettingUpdate.setMfaTotpEnable(true);
+            mfaSettingsService.update(mfaSettingUpdate, null);
+            return true;
+        }else {
+            return false;
+        }
+
     }
 
     /**

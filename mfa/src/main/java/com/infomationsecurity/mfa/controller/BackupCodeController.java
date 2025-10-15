@@ -84,4 +84,22 @@ public class BackupCodeController {
         );
     }
 
+    @DeleteMapping
+    @Operation(
+            summary = "Delete Backup Codes",
+            description = "Delete backup codes for the authenticated user",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "201",
+                            description = "Backup codes Deleted successfully"
+                    )
+            }
+    )
+    public ResponseEntity<APIResponse<Void>> deleteBackupCode(HttpServletRequest request) {
+        backupCodeService.deleteBackupCodes();
+        return ResponseEntity.status(200).body(
+                new APIResponse<>(true, "Backup codes Deleted successfully", null, null, request.getRequestURI())
+        );
+    }
+
 }

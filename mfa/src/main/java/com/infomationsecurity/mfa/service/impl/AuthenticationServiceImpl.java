@@ -5,6 +5,7 @@ import com.infomationsecurity.mfa.dto.other.RequestInfo;
 import com.infomationsecurity.mfa.dto.request.accountDTO.FormVerify;
 import com.infomationsecurity.mfa.dto.request.emailOTP.EmailResendOTP;
 import com.infomationsecurity.mfa.dto.request.emailOTP.EmailVerificationDTO;
+import com.infomationsecurity.mfa.dto.request.emailOTP.VerifyOTP;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AuthenticationDTO;
 import com.infomationsecurity.mfa.entity.Account;
@@ -15,6 +16,7 @@ import com.infomationsecurity.mfa.exception.Error;
 import com.infomationsecurity.mfa.service.*;
 import com.infomationsecurity.mfa.util.GithubUtils;
 import com.infomationsecurity.mfa.util.LoginAttemptChecked;
+import com.infomationsecurity.mfa.util.OtpService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,6 +40,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final TokenService tokenService;
     private final GithubUtils githubUtils;
     private final MailService mailService;
+    private final OtpService otpService;
 
     public AuthenticationServiceImpl(@Lazy AccountService accountService,
                                       PasswordEncoder passwordEncoder,
@@ -47,7 +50,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                                       MfaSettingsService mfaSettingsService,
                                       TokenService tokenService,
                                       GithubUtils githubUtils,
-                                      MailService mailService) {
+                                      MailService mailService,
+                                     OtpService otpService) {
         this.accountService = accountService;
         this.passwordEncoder = passwordEncoder;
         this.loginAttemptChecked = loginAttemptChecked;
@@ -57,6 +61,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         this.tokenService = tokenService;
         this.githubUtils = githubUtils;
         this.mailService = mailService;
+        this.otpService = otpService;
     }
 
     /**
@@ -167,6 +172,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         emailResendOTP.setEmail(accountDTO.getAccountEmail());
 
         mailService.sendVerificationOTPEmail(emailResendOTP);
+    }
+
+    /**
+     * @param verifyOTP
+     * @return
+     */
+    @Override
+    public Boolean verifyOtp(VerifyOTP verifyOTP) {
+        AccountDTO accountDTO = accountService.getAccountAuth();
+
+        return otpService.validateOtp(accountDTO.getAccountEmail(), verifyOTP.getOtp());
     }
 
     /**

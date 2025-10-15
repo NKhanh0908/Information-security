@@ -43,6 +43,28 @@ public class TOTPController {
                 .body(new APIResponse<>(true, "TOTP registration initiated successfully", result, null, request.getRequestURI()));
     }
 
+    @PostMapping("/verify-register-totp")
+    @Operation(
+            summary = "Verify TOTP code",
+            description = "Verify a TOTP code provided by the user",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = TOTPVerificationDTO.class))
+            ),
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "TOTP verification result",
+                            content = @Content(schema = @Schema(implementation = Boolean.class))
+                    )
+            }
+    )
+    public ResponseEntity<APIResponse<Boolean>> verifyRegisterTOTP(@RequestBody TOTPVerificationDTO verificationDTO, HttpServletRequest request) {
+        Boolean result = totpService.verifyRegisterTOTP(verificationDTO);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new APIResponse<>(true, "TOTP verification result", result, null, request.getRequestURI()));
+    }
+
     @PostMapping("/verify")
     @Operation(
             summary = "Verify TOTP code",

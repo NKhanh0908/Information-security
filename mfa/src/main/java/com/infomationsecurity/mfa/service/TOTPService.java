@@ -8,9 +8,16 @@ import org.springframework.stereotype.Service;
 @Service
 public interface TOTPService {
     TOTPRegistrationDTO registerTOTP();
+
+    Boolean verifyRegisterTOTP(TOTPVerificationDTO verificationDTO);
+
     Boolean verifyTOTP(TOTPVerificationDTO verificationDTO);
+
     Boolean verifyTOTP(String code, String secretKey);
+
     Boolean verifyLoginRequest(AccountDTO account, String totpCode);
+
     String[] generateBackupCodes(AccountDTO account);
+
     Boolean verifyBackupCode(AccountDTO account, String backupCode);
 }
