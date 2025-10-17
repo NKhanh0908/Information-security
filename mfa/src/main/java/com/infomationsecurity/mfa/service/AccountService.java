@@ -2,6 +2,8 @@ package com.infomationsecurity.mfa.service;
 
 import com.infomationsecurity.mfa.dto.other.GitHubUserInfo;
 import com.infomationsecurity.mfa.dto.request.accountDTO.AccountCreateDTO;
+import com.infomationsecurity.mfa.dto.request.nonAuth.accountDTO.FormRequireNonAuth;
+import com.infomationsecurity.mfa.dto.request.nonAuth.accountDTO.FormResetPasswordDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
 import com.infomationsecurity.mfa.entity.Account;
 import org.springframework.stereotype.Service;
@@ -27,10 +29,10 @@ public interface AccountService {
 
     void updateLastLoginTime(Account account);
 
-    //ForgotPasswordResponseDTO forgotPassword(String email);
+    Boolean requiredForgotPassword(FormRequireNonAuth formRequireNonAuth);
 
     //OtpVerificationResponseDTO verifyOtp(OtpVerificationDTO otpVerificationDTO);
 
-    //String resetPassword(ResetPasswordDTO resetPasswordDTO);
+    void resetPassword(FormResetPasswordDTO formResetPasswordDTO);
 
 }
