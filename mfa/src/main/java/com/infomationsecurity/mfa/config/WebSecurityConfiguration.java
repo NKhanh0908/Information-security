@@ -72,7 +72,17 @@ public class WebSecurityConfiguration {
                                 contextPath + "/accounts/sign-in/github",
                                 contextPath + "/accounts/sign-up/google",
                                 contextPath + "/accounts/sign-up/github",
-                                contextPath + "/tokens/refresh-token")
+                                contextPath + "/accounts/reset-password",
+                                contextPath + "/accounts/require-forgot-password",
+
+                                contextPath + "/tokens/refresh-token",
+
+                                contextPath + "/mfa-settings",
+
+                                contextPath + "/na-mail/require-auth",
+                                contextPath + "/na-mail/verify-auth",
+
+                                contextPath + "/na-backup-codes/invalidate")
                         .permitAll()
 
                         // OAuth2 callback endpoints
