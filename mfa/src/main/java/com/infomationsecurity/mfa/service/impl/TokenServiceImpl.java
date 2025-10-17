@@ -29,18 +29,24 @@ public class TokenServiceImpl implements TokenService {
         this.accountService = accountService;
     }
     /**
-     * @param refreshTokenDTO
+     * @param refreshToken
      * @return
      */
     @Override
-    public AuthenticationDTO refreshToken(RefreshTokenDTO refreshTokenDTO) {
-        log.info("{} Refreshing token for user", LOG_PREFIX);
+    public AuthenticationDTO refreshToken(String refreshToken) {
+        log.info("{} Refreshing token for user: {}", LOG_PREFIX, refreshToken);
         try {
-            String refreshToken = refreshTokenDTO.getRefreshToken();
             validateRefreshToken(refreshToken);
 
+            log.info("{}  Validating refresh token for user: {}", LOG_PREFIX, refreshToken);
+
             String username = jwtTokenUtil.extractTokenGetUsername(refreshToken);
+
+            log.info("{} Username for user: {}", LOG_PREFIX, username);
+
             Account account = accountService.getAccountByUsername(username);
+
+            log.info("{} Account for user: {}", LOG_PREFIX, account);
 
             return generateTokens(account);
         } catch (Exception e) {
@@ -74,7 +80,7 @@ public class TokenServiceImpl implements TokenService {
     }
 
     private void validateRefreshToken(String refreshToken) {
-        if (!jwtTokenUtil.isTokenExpired(refreshToken)) {
+        if (jwtTokenUtil.isTokenExpired(refreshToken)) {
             throw new CustomException(Error.INVALID_REFRESH_TOKEN);
         }
     }

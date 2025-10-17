@@ -2,7 +2,9 @@ package com.infomationsecurity.mfa.service.impl;
 
 import com.infomationsecurity.mfa.dto.other.GitHubUserInfo;
 import com.infomationsecurity.mfa.dto.request.accountDTO.AccountCreateDTO;
+import com.infomationsecurity.mfa.dto.request.nonAuth.accountDTO.FormRequireNonAuth;
 import com.infomationsecurity.mfa.dto.request.emailOTP.EmailResendOTP;
+import com.infomationsecurity.mfa.dto.request.nonAuth.accountDTO.FormResetPasswordDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
 import com.infomationsecurity.mfa.entity.*;
 import com.infomationsecurity.mfa.exception.CustomException;
@@ -150,6 +152,33 @@ public class AccountServiceImpl implements AccountService {
     public void updateLastLoginTime(Account account) {
         account.setAccountLastLogin(LocalDateTime.now());
         accountRepository.save(account);
+    }
+
+    /**
+     * @param formRequireNonAuth
+     * @return
+     */
+    @Override
+    public Boolean requiredForgotPassword(FormRequireNonAuth formRequireNonAuth) {
+        log.info("{} Require forgot password for email: {}", LOG_PREFIX, formRequireNonAuth.getEmail());
+
+        return getAccountByEmail(formRequireNonAuth.getEmail()).isPresent();
+    }
+
+    /**
+     * @param formResetPasswordDTO
+     */
+    @Override
+    public void resetPassword(FormResetPasswordDTO formResetPasswordDTO) {
+        log.info("{} Attempting to reset password", LOG_PREFIX);
+
+        Optional<Account> accountChecked = getAccountByEmail(formResetPasswordDTO.getEmail());
+        if(accountChecked.isPresent()){
+            Account account = accountChecked.get();
+            account.setAccountPassword(passwordEncoder.encode(formResetPasswordDTO.getPassword()));
+            accountRepository.save(account);
+        }
+
     }
 
     private User createUser(AccountCreateDTO accountCreateDTO) {

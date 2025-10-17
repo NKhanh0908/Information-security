@@ -11,10 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 
@@ -53,6 +50,24 @@ public class TrustDeviceController {
                                 true,
                                 "Trust devices retrieved successfully",
                                 resultPage,
+                                null,
+                                request.getRequestURI()));
+        }
+
+        @DeleteMapping("/{trustDeviceId}")
+        @Operation(summary = "Delete a trust device", description = "Delete a trust device by its ID", responses = {
+                        @ApiResponse(responseCode = "200", description = "Trust device deleted successfully"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized access"),
+                        @ApiResponse(responseCode = "404", description = "Trust device not found")
+        })
+        public ResponseEntity<APIResponse<Void>> deleteTrustDevice(
+                        @PathVariable Integer trustDeviceId,
+                        HttpServletRequest request) {
+                trustDeviceService.deleteTrustDevice(trustDeviceId);
+                return ResponseEntity.ok(new APIResponse<>(
+                                true,
+                                "Trust device deleted successfully",
+                                null,
                                 null,
                                 request.getRequestURI()));
         }

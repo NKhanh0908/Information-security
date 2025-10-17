@@ -14,6 +14,7 @@ public enum Error {
     CONFLICT(409, "Conflict", HttpStatus.CONFLICT),
     METHOD_NOT_ALLOWED(405, "Method not allowed", HttpStatus.METHOD_NOT_ALLOWED),
     TOO_MANY_REQUESTS(429, "Too many requests", HttpStatus.TOO_MANY_REQUESTS),
+    INVALID_ENUM(422, "Invalid enum", HttpStatus.BAD_REQUEST),
 
     // Server Error
     UNCATEGORIZED_EXCEPTION(9999, "Unclassified error", HttpStatus.INTERNAL_SERVER_ERROR),
@@ -85,6 +86,9 @@ public enum Error {
     MFA_SETTINGS_INVALID(40005, "Invalid MFA settings", HttpStatus.BAD_REQUEST),
     MFA_SETTINGS_ALREADY_EXISTS(40006, "MFA settings already exist", HttpStatus.CONFLICT),
     MFA_METHOD_NOT_SUPPORTED(40007, "MFA method not supported", HttpStatus.BAD_REQUEST),
+
+    //Trust Device
+    TRUST_DEVICE_NOT_FOUND(1100, "Trust device not found", HttpStatus.NOT_FOUND),
 
     // Totp related errors
     TOTP_SECRET_KEY_NOT_FOUND(41001, "TOTP secret key not found", HttpStatus.NOT_FOUND),

@@ -16,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -165,7 +167,9 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
 
         Specification<LoginAttempt> specification = LoginAttemptSpecification.filter(filter);
 
-        Page<LoginAttempt> loginAttemptPage = loginAttemptRepository.findAll(specification, PageRequest.of(page, size));
+        Sort defaultSort = Sort.by(Sort.Direction.DESC, "attemptCreatedAt");
+
+        Page<LoginAttempt> loginAttemptPage = loginAttemptRepository.findAll(specification, PageRequest.of(page, size, defaultSort));
 
         return PageDTO.<LoginAttemptDTO>builder()
                 .content(loginAttemptPage.getContent().stream()

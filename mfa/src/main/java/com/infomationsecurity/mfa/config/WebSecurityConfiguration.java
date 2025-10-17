@@ -46,7 +46,7 @@ public class WebSecurityConfiguration {
     private String githubClientSecret;
 
     public WebSecurityConfiguration(OurUserDetailsService ourUserDetailsService,
-                                    JwtAuthenticationFilter jwtAuthenticationFilter) {
+            JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.ourUserDetailsService = ourUserDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
@@ -62,8 +62,8 @@ public class WebSecurityConfiguration {
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
-                                "/**"
-                        ).permitAll()
+                                "/**")
+                        .permitAll()
 
                         // Public authentication endpoints
                         .requestMatchers(HttpMethod.POST,
@@ -71,19 +71,31 @@ public class WebSecurityConfiguration {
                                 contextPath + "/accounts/sign-in/google",
                                 contextPath + "/accounts/sign-in/github",
                                 contextPath + "/accounts/sign-up/google",
-                                contextPath + "/accounts/sign-up/github"
-                        ).permitAll()
+                                contextPath + "/accounts/sign-up/github",
+                                contextPath + "/accounts/reset-password",
+                                contextPath + "/accounts/require-forgot-password",
+
+                                contextPath + "/tokens/refresh-token",
+
+                                contextPath + "/mfa-settings",
+
+                                contextPath + "/na-mail/require-auth",
+                                contextPath + "/na-mail/verify-auth",
+
+                                contextPath + "/na-backup-codes/invalidate")
+                        .permitAll()
 
                         // OAuth2 callback endpoints
                         .requestMatchers(
                                 "/oauth2/**",
-                                "/login/oauth2/**"
-                        ).permitAll()
+                                "/login/oauth2/**")
+                        .permitAll()
 
                         .anyRequest()
                         .authenticated())
                 .httpBasic(withDefaults())
-                .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(manager -> manager
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2Client(oauth2 -> oauth2
                         .clientRegistrationRepository(clientRegistrationRepository()))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(
@@ -114,8 +126,7 @@ public class WebSecurityConfiguration {
     @Bean
     public ClientRegistrationRepository clientRegistrationRepository() {
         return new InMemoryClientRegistrationRepository(
-                githubClientRegistration()
-        );
+                githubClientRegistration());
     }
 
     @Bean

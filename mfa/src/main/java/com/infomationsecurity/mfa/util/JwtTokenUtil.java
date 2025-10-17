@@ -21,8 +21,8 @@ import java.util.stream.Collectors;
 @Component
 public class JwtTokenUtil {
 
-    private final SecretKey secretKeyForAccessToken ;
-    private final SecretKey secretKeyForRefreshToken = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private final SecretKey secretKey;
+
 
     private final long accessTokenExpiration;
     private final long refreshTokenExpiration;
@@ -33,9 +33,10 @@ public class JwtTokenUtil {
             @Value("${jwt.refresh-expiration:604800000}") long refreshTokenExpiration
     ) {
         byte[] keyBytes = Base64.getDecoder().decode(jwtSecret.getBytes(StandardCharsets.UTF_8));
-        this.secretKeyForAccessToken = new SecretKeySpec(keyBytes, "HmacSHA256");
+        this.secretKey = new SecretKeySpec(keyBytes, "HmacSHA256");
         this.accessTokenExpiration = accessTokenExpiration;
         this.refreshTokenExpiration = refreshTokenExpiration;
+
     }
 
     private Map<String, Object> extractRole(UserDetails userDetails) {
@@ -53,7 +54,7 @@ public class JwtTokenUtil {
                 .claims(extractRole(userDetails))
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + accessTokenExpiration))
-                .signWith(secretKeyForAccessToken)
+                .signWith(secretKey)
                 .compact();
     }
 
@@ -63,15 +64,17 @@ public class JwtTokenUtil {
                 .claims(extractRole(userDetails))
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + refreshTokenExpiration))
-                .signWith(secretKeyForRefreshToken)
+                .signWith(secretKey)
                 .compact();
     }
 
     private <T> T extractClaims(String token, Function<Claims, T> claimsTFunction){
         return claimsTFunction.apply(
-                Jwts.parser().verifyWith(secretKeyForAccessToken).build().parseSignedClaims(token).getPayload()
+                Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload()
         );
     }
+
+
 
     public String extractTokenGetUsername(String token){
         return extractClaims(token, Claims::getSubject);
@@ -84,10 +87,10 @@ public class JwtTokenUtil {
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractTokenGetUsername(token);
         if (!username.equals(userDetails.getUsername())) {
-            throw new UsernameNotFoundException("null");
+            return false;
         }
         if (isTokenExpired(token)) {
-            throw new UsernameNotFoundException("null");
+            return false;
         }
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }

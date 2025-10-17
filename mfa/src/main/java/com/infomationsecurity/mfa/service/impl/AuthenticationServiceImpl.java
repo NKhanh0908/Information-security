@@ -2,9 +2,11 @@ package com.infomationsecurity.mfa.service.impl;
 
 import com.infomationsecurity.mfa.dto.other.GitHubUserInfo;
 import com.infomationsecurity.mfa.dto.other.RequestInfo;
-import com.infomationsecurity.mfa.dto.request.accountDTO.FormLoginDTO;
-import com.infomationsecurity.mfa.dto.request.accountDTO.RefreshTokenDTO;
-import com.infomationsecurity.mfa.dto.response.MfaSettingsDTO;
+import com.infomationsecurity.mfa.dto.request.accountDTO.FormVerify;
+import com.infomationsecurity.mfa.dto.request.emailOTP.EmailResendOTP;
+import com.infomationsecurity.mfa.dto.request.emailOTP.EmailVerificationDTO;
+import com.infomationsecurity.mfa.dto.request.emailOTP.VerifyOTP;
+import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AuthenticationDTO;
 import com.infomationsecurity.mfa.entity.Account;
 import com.infomationsecurity.mfa.entity.MfaSettings;
@@ -14,6 +16,7 @@ import com.infomationsecurity.mfa.exception.Error;
 import com.infomationsecurity.mfa.service.*;
 import com.infomationsecurity.mfa.util.GithubUtils;
 import com.infomationsecurity.mfa.util.LoginAttemptChecked;
+import com.infomationsecurity.mfa.util.OtpService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,6 +39,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final MfaSettingsService mfaSettingsService;
     private final TokenService tokenService;
     private final GithubUtils githubUtils;
+    private final MailService mailService;
+    private final OtpService otpService;
 
     public AuthenticationServiceImpl(@Lazy AccountService accountService,
                                       PasswordEncoder passwordEncoder,
@@ -44,7 +49,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                                       TrustDeviceService trustDeviceService,
                                       MfaSettingsService mfaSettingsService,
                                       TokenService tokenService,
-                                      GithubUtils githubUtils) {
+                                      GithubUtils githubUtils,
+                                      MailService mailService,
+                                     OtpService otpService) {
         this.accountService = accountService;
         this.passwordEncoder = passwordEncoder;
         this.loginAttemptChecked = loginAttemptChecked;
@@ -53,16 +60,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         this.mfaSettingsService = mfaSettingsService;
         this.tokenService = tokenService;
         this.githubUtils = githubUtils;
+        this.mailService = mailService;
+        this.otpService = otpService;
     }
 
     /**
-     * @param formLoginDTO
+     * @param formVerify
      * @return
      */
     @Override
-    public AuthenticationDTO signIn(FormLoginDTO formLoginDTO) {
+    public AuthenticationDTO signIn(FormVerify formVerify) {
         try {
-            String username = formLoginDTO.getUsername().trim().toLowerCase();
+            String username = formVerify.getUsername().trim().toLowerCase();
             log.info("{} Attempting to sign in user: {}", LOG_PREFIX, username);
 
             Account account = accountService.getAccountByUsername(username);
@@ -70,12 +79,24 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             String lockKey = username + ":" + requestInfo.getIp();
 
             validateAccountLockStatus(account, requestInfo, lockKey);
-            validatePassword(formLoginDTO.getPassword(), account, requestInfo, lockKey);
+            validatePassword(formVerify.getPassword(), account, requestInfo, lockKey);
 
             return processSuccessfulLogin(account, requestInfo, username);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * @param rawPassword
+     * @return
+     */
+    @Override
+    public Boolean verifyPassword(String rawPassword) {
+        log.info("{} Verifying password for authenticated user", LOG_PREFIX);
+        AccountDTO accountDTO = accountService.getAccountAuth();
+
+        return passwordEncoder.matches(rawPassword, accountService.getAccountByUsername(accountDTO.getAccountUsername()).getPassword());
     }
 
     @Override
@@ -117,7 +138,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             loginAttemptChecked.loginSucceeded(username + ":" + requestInfo.getIp());
             accountService.updateLastLoginTime(account);
 
-            TrustDevice trustDevice = trustDeviceService.createOrGetTrustDevice(account, requestInfo);
+            TrustDevice trustDevice = trustDeviceService.createOrGetTrustDevice(account, requestInfo, false);
 
             // Check if MFA is required for this device
             if (!requiresMfaVerification(account, trustDevice)) {
@@ -139,6 +160,43 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             log.error("Error processing successful login: ", e);
             throw new RuntimeException("Login processing failed", e);
         }
+    }
+
+    /**
+     * @return
+     */
+    @Override
+    public void sendEmailNotificationVerify() {
+        AccountDTO accountDTO = accountService.getAccountAuth();
+        EmailResendOTP emailResendOTP = new EmailResendOTP();
+        emailResendOTP.setEmail(accountDTO.getAccountEmail());
+
+        mailService.sendVerificationOTPEmail(emailResendOTP);
+    }
+
+    /**
+     * @param verifyOTP
+     * @return
+     */
+    @Override
+    public Boolean verifyOtp(VerifyOTP verifyOTP) {
+        AccountDTO accountDTO = accountService.getAccountAuth();
+
+        return otpService.validateOtp(accountDTO.getAccountEmail(), verifyOTP.getOtp());
+    }
+
+    /**
+     * @param emailVerificationDTO
+     * @return
+     */
+    @Override
+    public Boolean verifyEmail(EmailVerificationDTO emailVerificationDTO) {
+
+        AccountDTO accountDTO = accountService.getAccountAuth();
+
+        emailVerificationDTO.setEmail(accountDTO.getAccountEmail());
+
+        return mailService.verifyEmail(emailVerificationDTO);
     }
 
     private AuthenticationDTO triggerMfaProcess(Account account, TrustDevice trustDevice) {
@@ -168,14 +226,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     private boolean requiresMfaVerification(Account account, TrustDevice trustDevice) {
-        if (isFirstTimeLogin(trustDevice)) {
-            log.info("{} First time login detected for device: {}", LOG_PREFIX, trustDevice.getDeviceName());
-            return false;
-        }
+//        if (!isFirstTimeLogin(trustDevice)) {
+//            log.info("{} First time login detected for device: {}", LOG_PREFIX, trustDevice.getDeviceName());
+//            return false;
+//        }
 
         MfaSettings mfaSettings = mfaSettingsService.getMfaSettingsByAccount(account.getAccountId());
 
-        if (!trustDevice.getDeviceIsVerified() && mfaSettings.getMfaEnabled()) {
+        if (mfaSettings.getMfaEnabled() && !trustDevice.getDeviceIsVerified()) {
             log.info("{} Device is already verified: {}", LOG_PREFIX, trustDevice.getDeviceName());
             return false;
         }

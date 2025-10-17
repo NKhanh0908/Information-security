@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface TokenService {
-    AuthenticationDTO refreshToken(RefreshTokenDTO refreshTokenDTO);
+    AuthenticationDTO refreshToken(String refreshToken);
 
     AuthenticationDTO generateTokens(Account account);
 

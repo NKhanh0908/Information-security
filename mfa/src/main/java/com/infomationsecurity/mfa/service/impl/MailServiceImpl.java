@@ -1,8 +1,11 @@
 package com.infomationsecurity.mfa.service.impl;
 
 import com.infomationsecurity.mfa.dto.other.RequestInfo;
+import com.infomationsecurity.mfa.dto.request.accountDTO.FormVerify;
 import com.infomationsecurity.mfa.dto.request.emailOTP.EmailResendOTP;
 import com.infomationsecurity.mfa.dto.request.emailOTP.EmailVerificationDTO;
+import com.infomationsecurity.mfa.dto.request.emailOTP.EmailVerificationDevice;
+import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
 import com.infomationsecurity.mfa.entity.Account;
 import com.infomationsecurity.mfa.entity.MfaSettings;
 import com.infomationsecurity.mfa.entity.TrustDevice;
@@ -71,6 +74,20 @@ public class MailServiceImpl implements MailService {
 
     }
 
+    /**
+     * @param formVerify
+     */
+    @Override
+    public void sendEmailVerifyDevice(FormVerify formVerify) {
+        Account account = accountRepository.findByAccountUsername(formVerify.getUsername())
+                .orElseThrow();
+
+        String OTP = otpService.generateOtp(account.getAccountEmail());
+
+        sendVerificationEmail(account, OTP);
+
+    }
+
     @Override
     public Boolean verifyEmail(EmailVerificationDTO emailVerificationDTO) {
         return otpService.validateOtp(emailVerificationDTO.getEmail(), emailVerificationDTO.getOtp());
@@ -87,10 +104,28 @@ public class MailServiceImpl implements MailService {
             createMFASetting(account);
             //TrustDevice
             RequestInfo requestInfo = mfaSettingsService.extractRequestInfo();
-            TrustDevice trustDevice = trustDeviceService.createOrGetTrustDevice(account, requestInfo);
+            TrustDevice trustDevice = trustDeviceService.createOrGetTrustDevice(account, requestInfo, true);
             sendWelcomeEmail(account, trustDevice.getDeviceName());
             return true;
         }
+        return false;
+    }
+
+    /**
+     * @param emailVerificationDevice
+     * @return
+     */
+    @Override
+    public Boolean verifyEmailDevice(EmailVerificationDevice emailVerificationDevice) {
+
+        Optional<Account> account = accountRepository.findByAccountUsername(emailVerificationDevice.getUsername());
+
+        if(account.isPresent()){
+            Boolean isVerify = otpService.validateOtp(account.get().getAccountEmail(), emailVerificationDevice.getOtp());
+            trustDeviceService.updateDeviceVerify(account.get());
+            return isVerify;
+        }
+
         return false;
     }
 

@@ -58,11 +58,14 @@ public class UserServiceImpl implements UserService {
 
         
         // Đây là cách xử lí khi gửi thông tin user theo JSON
-        User oldUser = userRepository.findByUserName(userUpdateDTO.getUserName());
+        User oldUser = getUser();
         if (oldUser == null) {
             throw new RuntimeException("User not found: " + userUpdateDTO.getUserName());
         }
 
+        if(userUpdateDTO.getUserName() != null && !userUpdateDTO.getUserName().equals(oldUser.getUserName())) {
+            oldUser.setUserName(userUpdateDTO.getUserName());
+        }
         
         if (userUpdateDTO.getUserGender() != null) {
             oldUser.setUserGender(userUpdateDTO.getUserGender());
@@ -97,9 +100,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO getCurrentUser() {
         log.info("Fetching current user information");
-        AccountDTO account = accountService.getAccountAuth();
 
-        return userMapper.entityToDTO(
-                userRepository.findByAccountId(account.getAccountId()));
+        return userMapper.entityToDTO(getUser());
+    }
+
+    private User getUser(){
+        AccountDTO account = accountService.getAccountAuth();
+     return userRepository.findByAccountId(account.getAccountId());
     }
 }

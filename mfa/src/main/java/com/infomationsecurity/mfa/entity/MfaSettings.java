@@ -32,7 +32,7 @@ public class MfaSettings {
     private Account account;
 
     @Column(name = "mfa_enabled")
-    private Boolean mfaEnabled = false;
+    private Boolean mfaEnabled = true;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "mfa_primary_method", nullable = false)
@@ -53,7 +53,7 @@ public class MfaSettings {
     private List<String> backupCodes;
 
     @Column(name = "mfa_email_enabled")
-    private Boolean mfaEmailEnabled = false;
+    private Boolean mfaEmailEnabled = true;
 
     @Column(name = "mfa_webauthn_enabled")
     private Boolean mfaWebauthnEnabled = false;

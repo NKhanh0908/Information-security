@@ -1,9 +1,10 @@
 package com.infomationsecurity.mfa.service.impl;
 
-import com.beust.ah.A;
 import com.infomationsecurity.mfa.dto.other.RequestInfo;
+import com.infomationsecurity.mfa.dto.request.accountDTO.FormVerify;
 import com.infomationsecurity.mfa.dto.request.accountDTO.VerifyDeviceWithTOTP;
-import com.infomationsecurity.mfa.dto.response.MfaSettingsDTO;
+import com.infomationsecurity.mfa.dto.request.setting.MfaSettingUpdate;
+import com.infomationsecurity.mfa.dto.response.settingDTO.MfaSettingsDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AuthenticationDTO;
 import com.infomationsecurity.mfa.entity.Account;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -68,20 +70,88 @@ public class MfaSettingsServiceImpl implements MfaSettingsService {
     }
 
     @Override
-    public MfaSettingsDTO update(MfaSettings mfaSettings) {
-        return null;
+    public MfaSettingsDTO update(MfaSettingUpdate mfaSettingUpdate, Integer mfaId) {
+        log.info("{} Updating MFA settings with ID: {}", LOG_PREFIX, mfaId);
+
+        MfaSettings mfaSettings = null;
+        if (mfaId != null) {
+            mfaSettings = mfaSettingsRepository.findById(mfaId)
+                    .orElseThrow(() -> new CustomException(Error.MFA_SETTINGS_NOT_FOUND));
+        }else{
+            AccountDTO account = accountService.getAccountAuth();
+            mfaSettings = getMfaSettingsByAccount(account.getAccountId());
+        }
+
+        // Update boolean flags
+        if (mfaSettingUpdate.getMfaEnabled() != null) {
+            mfaSettings.setMfaEnabled(mfaSettingUpdate.getMfaEnabled());
+        }
+        if (mfaSettingUpdate.getMfaTotpEnable() != null) {
+            mfaSettings.setMfaTotpEnable(mfaSettingUpdate.getMfaTotpEnable());
+        }
+        if (mfaSettingUpdate.getMfaEmailEnabled() != null) {
+            mfaSettings.setMfaEmailEnabled(mfaSettingUpdate.getMfaEmailEnabled());
+        }
+        if (mfaSettingUpdate.getMfaWebauthnEnabled() != null) {
+            mfaSettings.setMfaWebauthnEnabled(mfaSettingUpdate.getMfaWebauthnEnabled());
+        }
+        if (mfaSettingUpdate.getMfaAuthenticatorAppEnabled() != null) {
+            mfaSettings.setMfaAuthenticatorAppEnabled(mfaSettingUpdate.getMfaAuthenticatorAppEnabled());
+        }
+        if (mfaSettingUpdate.getMfaRequiredMfaForSensitiveActions() != null) {
+            mfaSettings.setMfaRequiredMfaForSensitiveActions(mfaSettingUpdate.getMfaRequiredMfaForSensitiveActions());
+        }
+
+        // Update enum fields
+        if (mfaSettingUpdate.getMfaPrimaryMethod() != null) {
+            try {
+                mfaSettings.setMfaPrimaryMethod(MfaMethod.valueOf(mfaSettingUpdate.getMfaPrimaryMethod().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new CustomException(Error.INVALID_ENUM);
+            }
+        }
+
+        if (mfaSettingUpdate.getMfaBackupMethod() != null) {
+            try {
+                mfaSettings.setMfaBackupMethod(MfaMethod.valueOf(mfaSettingUpdate.getMfaBackupMethod().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new CustomException(Error.INVALID_ENUM);
+            }
+        }
+
+
+        return mfaSettingsMapper.entityToDTO(mfaSettingsRepository.save(mfaSettings));
     }
+
 
     @Transactional
     @Override
-    public MfaSettingsDTO getMfaSettingsByAccount() {
-        log.info("{} Get MFA settings for account", LOG_PREFIX);
+    public MfaSettingsDTO getMfaSettingsByAccount(FormVerify formVerify) {
+        log.info("{} Get MFA settings for account: {}", LOG_PREFIX, formVerify);
 
-        AccountDTO accountDTO = accountService.getAccountAuth();
+        Integer accountId = null;
 
-        MfaSettings mfaSettings = getMfaSettingsByAccount(accountDTO.getAccountId());
+        if(formVerify.getUsername() != null){
+            Optional<Account> account = accountService.getAccountByEmail(formVerify.getUsername());
+            if(account.isPresent()){
+                accountId = account.get().getAccountId();
+            }
+        }
+        else {
+            accountId = accountService.getAccountAuth().getAccountId();
+        }
+
+        MfaSettings mfaSettings = getMfaSettingsByAccount(accountId);
 
         return mfaSettingsMapper.entityToDTO(mfaSettings);
+    }
+
+    /**
+     * @return
+     */
+    @Override
+    public MfaSettingsDTO getMfaSettingCurrentUser() {
+        return null;
     }
 
     /**
