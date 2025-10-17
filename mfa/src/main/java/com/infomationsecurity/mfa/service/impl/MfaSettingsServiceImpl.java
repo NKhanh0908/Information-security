@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -126,12 +127,15 @@ public class MfaSettingsServiceImpl implements MfaSettingsService {
     @Transactional
     @Override
     public MfaSettingsDTO getMfaSettingsByAccount(FormVerify formVerify) {
-        log.info("{} Get MFA settings for account", LOG_PREFIX);
+        log.info("{} Get MFA settings for account: {}", LOG_PREFIX, formVerify);
 
         Integer accountId = null;
 
         if(formVerify.getUsername() != null){
-            accountId = accountService.getAccountByUsername(formVerify.getUsername()).getAccountId();
+            Optional<Account> account = accountService.getAccountByEmail(formVerify.getUsername());
+            if(account.isPresent()){
+                accountId = account.get().getAccountId();
+            }
         }
         else {
             accountId = accountService.getAccountAuth().getAccountId();
