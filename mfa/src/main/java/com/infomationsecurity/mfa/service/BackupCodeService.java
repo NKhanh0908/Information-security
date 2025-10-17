@@ -8,6 +8,8 @@ import java.util.List;
 public interface BackupCodeService {
     Boolean invalidateBackupCode(String backupCode);
 
+    Boolean verifyBackupCode(String backupCode, Integer accountId);
+
     void generateBackupCodes();
 
     void deleteBackupCodes();

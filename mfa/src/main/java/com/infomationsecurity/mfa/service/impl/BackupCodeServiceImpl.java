@@ -34,7 +34,13 @@ public class BackupCodeServiceImpl implements BackupCodeService {
     public Boolean invalidateBackupCode(String backupCode) {
         log.info("{} Invalidate backup code for account", LOG_PREFIX);
         AccountDTO accountDTO = accountService.getAccountAuth();
-        MfaSettings mfaSettings = mfaSettingsService.getMfaSettingsByAccount(accountDTO.getAccountId());
+
+        return verifyBackupCode(backupCode, accountDTO.getAccountId());
+    }
+
+    @Override
+    public Boolean verifyBackupCode(String backupCode, Integer accountId) {
+        MfaSettings mfaSettings = mfaSettingsService.getMfaSettingsByAccount(accountId);
         List<String> backupCodes = mfaSettings.getBackupCodes();
         if (backupCodes.contains(backupCode)) {
             backupCodes.remove(backupCode);
