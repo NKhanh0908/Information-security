@@ -11,7 +11,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     ports:
-      - "${DB_PORT}:3306"
+      - "3307:3306"
     env_file:
       - .env
   redis:
@@ -24,6 +24,7 @@ services:
       - .env
 
   server:
+    image: nqkhanh0908/mfa-server:v1.0.0
     build: .
     container_name: mfa_server_app
     restart: always
@@ -52,10 +53,10 @@ services:
       SPRINGDOC_SWAGGER_UI_PATH: ${SPRINGDOC_SWAGGER_UI_PATH}
 
       # Mail Config
-      SPRING_MAIL_HOST: ${SPRING_MAIL_HOST}
-      SPRING_MAIL_PORT: ${SPRING_MAIL_PORT}
-      SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME}
-      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD}
+      SPRING_MAIL_HOST: ${MAIL_HOST}
+      SPRING_MAIL_PORT: ${MAIL_PORT}
+      SPRING_MAIL_USERNAME: ${MAIL_USERNAME}
+      SPRING_MAIL_PASSWORD: ${MAIL_PASSWORD}
 
       # Redis config
       REDIS_HOST: ${REDIS_HOST}
@@ -68,9 +69,20 @@ services:
       JWT_ACCESS_EXPIRATION: ${JWT_ACCESS_EXPIRATION}
       JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION}
 
-      # Email config
-      EMAIL_HOST: ${EMAIL_HOST}
-      EMAIL_PORT: ${EMAIL_PORT}
-      EMAIL_USERNAME: ${EMAIL_USERNAME}
-      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
-      EMAIL_FROM: ${EMAIL_FROM}
+      # Oath2 config
+      ## Google
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+
+      ## GitHub
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      GITHUB_REDIRECT_URI: ${GITHUB_REDIRECT_URI}
+      GITHUB_SCOPE: ${GITHUB_SCOPE}
+      GITHUB_AUTHORIZATION_URI: ${GITHUB_AUTHORIZATION_URI}
+      GITHUB_TOKEN_URI: ${GITHUB_TOKEN_URI}
+      GITHUB_USER_INFO_URI: ${GITHUB_USER_INFO_URI}
+
+volumes:
+  mysql_data:
+    name: mfa_mysql_data
