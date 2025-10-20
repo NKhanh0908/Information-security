@@ -49,6 +49,6 @@ public class NAMailServiceImpl implements NAMailService {
     public Boolean verifyEmailRequiredForgotPassword(EmailVerificationDTO emailVerificationDTO) {
         log.info("{} Verifying email verification",  LOG_PREFIX);
 
-        return mailService.verifyEmail(emailVerificationDTO);
+        return mailService.verifyEmail(emailVerificationDTO).getSuccess();
     }
 }

@@ -4,6 +4,7 @@ import com.infomationsecurity.mfa.dto.other.RequestInfo;
 import com.infomationsecurity.mfa.dto.request.accountDTO.FormVerify;
 import com.infomationsecurity.mfa.dto.request.emailOTP.EmailVerificationDTO;
 import com.infomationsecurity.mfa.dto.request.emailOTP.VerifyOTP;
+import com.infomationsecurity.mfa.dto.response.VerificationResult;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AuthenticationDTO;
 import com.infomationsecurity.mfa.entity.Account;
 
@@ -19,5 +20,5 @@ public interface AuthenticationService {
     void sendEmailNotificationVerify();
     Boolean verifyOtp(VerifyOTP verifyOTP);
 
-    Boolean verifyEmail(EmailVerificationDTO emailVerificationDTO);
+    VerificationResult verifyEmail(EmailVerificationDTO emailVerificationDTO);
 }

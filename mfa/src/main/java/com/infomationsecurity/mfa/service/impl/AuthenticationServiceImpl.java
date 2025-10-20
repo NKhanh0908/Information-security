@@ -6,6 +6,7 @@ import com.infomationsecurity.mfa.dto.request.accountDTO.FormVerify;
 import com.infomationsecurity.mfa.dto.request.emailOTP.EmailResendOTP;
 import com.infomationsecurity.mfa.dto.request.emailOTP.EmailVerificationDTO;
 import com.infomationsecurity.mfa.dto.request.emailOTP.VerifyOTP;
+import com.infomationsecurity.mfa.dto.response.VerificationResult;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AuthenticationDTO;
 import com.infomationsecurity.mfa.entity.Account;
@@ -190,7 +191,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
      * @return
      */
     @Override
-    public Boolean verifyEmail(EmailVerificationDTO emailVerificationDTO) {
+    public VerificationResult verifyEmail(EmailVerificationDTO emailVerificationDTO) {
 
         AccountDTO accountDTO = accountService.getAccountAuth();
 

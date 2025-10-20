@@ -1,10 +1,11 @@
 package com.infomationsecurity.mfa.controller;
 
-import com.infomationsecurity.mfa.dto.request.accountDTO.FormVerify;
 import com.infomationsecurity.mfa.dto.request.emailOTP.EmailResendOTP;
 import com.infomationsecurity.mfa.dto.request.emailOTP.EmailVerificationDTO;
+import com.infomationsecurity.mfa.dto.request.accountDTO.FormVerify;
 import com.infomationsecurity.mfa.dto.request.emailOTP.EmailVerificationDevice;
 import com.infomationsecurity.mfa.dto.response.APIResponse;
+import com.infomationsecurity.mfa.dto.response.VerificationResult;
 import com.infomationsecurity.mfa.service.MailService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -22,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RequestMapping("/mail")
 @RequiredArgsConstructor
-@Tag(name = "Mail Controller", description = "Manage email verification and OTP operations")
+@Tag(name = "Mail Controller", description = "Manage email verification, OTP operations, and device verification")
 public class MailController {
 
     private final MailService mailService;
@@ -47,9 +48,9 @@ public class MailController {
                     )
             }
     )
-    public ResponseEntity<APIResponse<Void>> sendVerificationEmail(@RequestBody EmailResendOTP email, HttpServletRequest request) {
+    public ResponseEntity<APIResponse<Void>> sendVerificationEmail(@RequestBody EmailResendOTP emailResendOTP, HttpServletRequest request) {
         try {
-            mailService.sendVerificationOTPEmail(email);
+            mailService.sendVerificationOTPEmail(emailResendOTP);
             return ResponseEntity.status(HttpStatus.ACCEPTED)
                     .body(new APIResponse<>(
                             true,
@@ -58,7 +59,49 @@ public class MailController {
                             null,
                             request.getRequestURI()));
         } catch (RuntimeException e) {
-            log.error("Error sending verification email to {}: {}", email, e.getMessage());
+            log.error("Error sending verification email to {}: {}", emailResendOTP.getEmail(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new APIResponse<>(
+                            false,
+                            e.getMessage(),
+                            null,
+                            null,
+                            request.getRequestURI()));
+        }
+    }
+
+    @PostMapping("/send-device-verification")
+    @Operation(
+            summary = "Send Device Verification Email",
+            description = "Sends an OTP verification email for device verification",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Username for device verification",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = FormVerify.class))
+            ),
+            responses = {
+                    @ApiResponse(responseCode = "202",
+                            description = "Device verification email sent successfully",
+                            content = @Content
+                    ),
+                    @ApiResponse(responseCode = "400",
+                            description = "Invalid username or rate limit exceeded",
+                            content = @Content
+                    )
+            }
+    )
+    public ResponseEntity<APIResponse<Void>> sendDeviceVerificationEmail(@RequestBody FormVerify formVerify, HttpServletRequest request) {
+        try {
+            mailService.sendEmailVerifyDevice(formVerify);
+            return ResponseEntity.status(HttpStatus.ACCEPTED)
+                    .body(new APIResponse<>(
+                            true,
+                            "Device verification email sent successfully",
+                            null,
+                            null,
+                            request.getRequestURI()));
+        } catch (RuntimeException e) {
+            log.error("Error sending device verification email for username {}: {}", formVerify.getUsername(), e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new APIResponse<>(
                             false,
@@ -81,7 +124,7 @@ public class MailController {
             responses = {
                     @ApiResponse(responseCode = "200",
                             description = "Email OTP verified successfully",
-                            content = @Content(schema = @Schema(implementation = Boolean.class))
+                            content = @Content(schema = @Schema(implementation = VerificationResult.class))
                     ),
                     @ApiResponse(responseCode = "400",
                             description = "Invalid OTP or email",
@@ -89,11 +132,11 @@ public class MailController {
                     )
             }
     )
-    public ResponseEntity<APIResponse<Boolean>> verifyEmail(@RequestBody EmailVerificationDTO emailVerificationDTO, HttpServletRequest request) {
-        Boolean result = mailService.verifyEmail(emailVerificationDTO);
+    public ResponseEntity<APIResponse<VerificationResult>> verifyEmail(@RequestBody EmailVerificationDTO emailVerificationDTO, HttpServletRequest request) {
+        VerificationResult result = mailService.verifyEmail(emailVerificationDTO);
         return ResponseEntity.ok(new APIResponse<>(
-                result,
-                result ? "Email OTP verified successfully" : "Invalid OTP or email",
+                result.getSuccess(),
+                result.getSuccess() ? "Email OTP verified successfully" : result.getMessage(),
                 result,
                 null,
                 request.getRequestURI()));
@@ -111,7 +154,7 @@ public class MailController {
             responses = {
                     @ApiResponse(responseCode = "200",
                             description = "Signup verification completed successfully",
-                            content = @Content(schema = @Schema(implementation = Boolean.class))
+                            content = @Content(schema = @Schema(implementation = VerificationResult.class))
                     ),
                     @ApiResponse(responseCode = "400",
                             description = "Invalid OTP or email",
@@ -119,87 +162,43 @@ public class MailController {
                     )
             }
     )
-    public ResponseEntity<APIResponse<Boolean>> verifiedSignUp(@RequestBody EmailVerificationDTO emailVerificationDTO, HttpServletRequest request) {
-        Boolean result = mailService.verifiedSignUp(emailVerificationDTO);
+    public ResponseEntity<APIResponse<VerificationResult>> verifiedSignUp(@RequestBody EmailVerificationDTO emailVerificationDTO, HttpServletRequest request) {
+        VerificationResult result = mailService.verifiedSignUp(emailVerificationDTO);
         return ResponseEntity.ok(new APIResponse<>(
-                result,
-                result ? "Signup verification completed successfully" : "Invalid OTP or email",
+                result.getSuccess(),
+                result.getSuccess() ? "Signup verification completed successfully" : result.getMessage(),
                 result,
                 null,
                 request.getRequestURI()));
     }
 
-    @PostMapping("/send-email-device")
+    @PostMapping("/verify-device")
     @Operation(
-            summary = "Verify Device via Email",
-            description = "Sends verification email for device trust setup and returns result",
+            summary = "Verify Device OTP",
+            description = "Verifies the OTP for device verification and updates trust device status",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Form containing email and device information for verification",
-                    required = true,
-                    content = @Content(schema = @Schema(implementation = FormVerify.class))
-            ),
-            responses = {
-                    @ApiResponse(responseCode = "200",
-                            description = "Verification email sent successfully",
-                            content = @Content(schema = @Schema(implementation = Boolean.class))
-                    ),
-                    @ApiResponse(responseCode = "400",
-                            description = "Failed to send verification email",
-                            content = @Content
-                    )
-            }
-    )
-    public ResponseEntity<APIResponse<Void>> sendEmailVerifyDevice(
-            @RequestBody FormVerify formVerify,
-            HttpServletRequest request
-    ) {
-            mailService.sendEmailVerifyDevice(formVerify);
-            return ResponseEntity.ok(new APIResponse<>(
-                    true,
-                    "Verification email sent successfully",
-                    null,
-                    null,
-                    request.getRequestURI()
-            ));
-        }
-
-    @PostMapping("/verify-email-device")
-    @Operation(
-            summary = "Verify Email Device",
-            description = "Verifies the device trust using email confirmation (OTP or token)",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Email and verification token for device trust",
+                    description = "Username and OTP for device verification",
                     required = true,
                     content = @Content(schema = @Schema(implementation = EmailVerificationDevice.class))
             ),
             responses = {
                     @ApiResponse(responseCode = "200",
-                            description = "Device verified successfully",
+                            description = "Device OTP verified successfully",
                             content = @Content(schema = @Schema(implementation = Boolean.class))
                     ),
                     @ApiResponse(responseCode = "400",
-                            description = "Invalid email or verification token",
+                            description = "Invalid OTP or username",
                             content = @Content
                     )
             }
     )
-    public ResponseEntity<APIResponse<Boolean>> verifyEmailDevice(
-            @RequestBody EmailVerificationDevice emailVerificationDevice,
-            HttpServletRequest request
-    ) {
+    public ResponseEntity<APIResponse<Boolean>> verifyDevice(@RequestBody EmailVerificationDevice emailVerificationDevice, HttpServletRequest request) {
         Boolean result = mailService.verifyEmailDevice(emailVerificationDevice);
-
         return ResponseEntity.ok(new APIResponse<>(
                 result,
-                result ? "Device verified successfully" : "Invalid email or verification token",
+                result ? "Device OTP verified successfully" : "Invalid OTP or username",
                 result,
                 null,
-                request.getRequestURI()
-        ));
+                request.getRequestURI()));
     }
-
-
 }
-
-
-

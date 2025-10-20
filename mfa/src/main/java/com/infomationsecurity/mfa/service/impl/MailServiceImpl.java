@@ -5,6 +5,7 @@ import com.infomationsecurity.mfa.dto.request.accountDTO.FormVerify;
 import com.infomationsecurity.mfa.dto.request.emailOTP.EmailResendOTP;
 import com.infomationsecurity.mfa.dto.request.emailOTP.EmailVerificationDTO;
 import com.infomationsecurity.mfa.dto.request.emailOTP.EmailVerificationDevice;
+import com.infomationsecurity.mfa.dto.response.VerificationResult;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
 import com.infomationsecurity.mfa.entity.Account;
 import com.infomationsecurity.mfa.entity.MfaSettings;
@@ -89,15 +90,30 @@ public class MailServiceImpl implements MailService {
     }
 
     @Override
-    public Boolean verifyEmail(EmailVerificationDTO emailVerificationDTO) {
-        return otpService.validateOtp(emailVerificationDTO.getEmail(), emailVerificationDTO.getOtp());
+    public VerificationResult verifyEmail(EmailVerificationDTO emailVerificationDTO) {
+        try {
+            boolean isValid = otpService.validateOtp(
+                    emailVerificationDTO.getEmail(),
+                    emailVerificationDTO.getOtp()
+            );
+            return VerificationResult.builder()
+                    .success(true)
+                    .message(null) // Hoặc một thông điệp thành công nếu cần
+                    .build();
+        } catch (RuntimeException e) {
+            log.warn("Email verification failed: {}", e.getMessage());
+            return VerificationResult.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .build();
+        }
     }
 
     @Override
-    public Boolean verifiedSignUp(EmailVerificationDTO emailVerificationDTO) {
+    public VerificationResult verifiedSignUp(EmailVerificationDTO emailVerificationDTO) {
 
-        Boolean result = verifyEmail(emailVerificationDTO);
-        if (result) {
+        VerificationResult result = verifyEmail(emailVerificationDTO);
+        if (result.getSuccess()) {
             //MFA setting
             Optional<Account> optionalAccount = getAccountByEmail(emailVerificationDTO.getEmail());
             Account account = optionalAccount.orElse(null);
@@ -106,9 +122,9 @@ public class MailServiceImpl implements MailService {
             RequestInfo requestInfo = mfaSettingsService.extractRequestInfo();
             TrustDevice trustDevice = trustDeviceService.createOrGetTrustDevice(account, requestInfo, true);
             sendWelcomeEmail(account, trustDevice.getDeviceName());
-            return true;
+            return result;
         }
-        return false;
+        return result;
     }
 
     /**
