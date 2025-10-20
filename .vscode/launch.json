@@ -1,14 +1,28 @@
 {
-    "configurations": [
-        {
-            "type": "java",
-            "name": "Spring Boot-MfaApplication<mfa>",
-            "request": "launch",
-            "cwd": "${workspaceFolder}",
-            "mainClass": "com.infomationsecurity.mfa.MfaApplication",
-            "projectName": "mfa",
-            "args": "",
-            "envFile": "${workspaceFolder}/.env"
-        }
-    ]
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Test",
+      "request": "launch",
+      "mainClass": "com.infomationsecurity.mfa.Test",
+      "projectName": "mfa"
+    },
+    {
+      "type": "java",
+      "name": "EncryptAesKey",
+      "request": "launch",
+      "mainClass": "com.infomationsecurity.mfa.EncryptAesKey",
+      "projectName": "mfa"
+    },
+    {
+      "type": "java",
+      "name": "Spring Boot-MfaApplication<mfa>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "com.infomationsecurity.mfa.MfaApplication",
+      "projectName": "mfa",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    }
+  ]
 }
