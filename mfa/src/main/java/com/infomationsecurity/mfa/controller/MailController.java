@@ -165,7 +165,7 @@ public class MailController {
     public ResponseEntity<APIResponse<VerificationResult>> verifiedSignUp(@RequestBody EmailVerificationDTO emailVerificationDTO, HttpServletRequest request) {
         VerificationResult result = mailService.verifiedSignUp(emailVerificationDTO);
         return ResponseEntity.ok(new APIResponse<>(
-                result.getSuccess(),
+                true,
                 result.getSuccess() ? "Signup verification completed successfully" : result.getMessage(),
                 result,
                 null,

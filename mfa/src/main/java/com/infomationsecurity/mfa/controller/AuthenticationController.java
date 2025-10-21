@@ -142,7 +142,7 @@ public class AuthenticationController {
                         HttpServletRequest request) {
                 VerificationResult result = authenticationService.verifyEmail(emailVerificationDTO);
                 return ResponseEntity.ok(new APIResponse<>(
-                                result.getSuccess(),
+                                true,
                                 result.getSuccess() ? "Email OTP verified successfully" : "Invalid OTP or email",
                                 result,
                                 null,

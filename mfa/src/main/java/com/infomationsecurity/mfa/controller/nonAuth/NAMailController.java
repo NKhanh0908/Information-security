@@ -3,6 +3,7 @@ package com.infomationsecurity.mfa.controller.nonAuth;
 import com.infomationsecurity.mfa.dto.request.emailOTP.EmailVerificationDTO;
 import com.infomationsecurity.mfa.dto.request.nonAuth.accountDTO.FormRequireNonAuth;
 import com.infomationsecurity.mfa.dto.response.APIResponse;
+import com.infomationsecurity.mfa.dto.response.VerificationResult;
 import com.infomationsecurity.mfa.service.MailService;
 import com.infomationsecurity.mfa.service.nonAuth.NAMailService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -82,15 +83,15 @@ public class NAMailController {
                             content = @Content)
             }
     )
-    public ResponseEntity<APIResponse<Boolean>> verifyEmailRequiredForgotPassword(
+    public ResponseEntity<APIResponse<VerificationResult>> verifyEmailRequiredForgotPassword(
             @RequestBody EmailVerificationDTO emailVerificationDTO,
             HttpServletRequest request
     ) {
-        Boolean result = naMailService.verifyEmailRequiredForgotPassword(emailVerificationDTO);
+        VerificationResult result = naMailService.verifyEmailRequiredForgotPassword(emailVerificationDTO);
         return ResponseEntity.ok(
                 new APIResponse<>(
-                        result,
-                        result ? "Email OTP verified successfully" : "Invalid OTP or email",
+                        true,
+                        result.getSuccess() ? "Email OTP verified successfully" : "Invalid OTP or email",
                         result,
                         null,
                         request.getRequestURI()

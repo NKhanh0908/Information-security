@@ -3,6 +3,7 @@ package com.infomationsecurity.mfa.service.nonAuth.impl;
 import com.infomationsecurity.mfa.dto.request.emailOTP.EmailResendOTP;
 import com.infomationsecurity.mfa.dto.request.emailOTP.EmailVerificationDTO;
 import com.infomationsecurity.mfa.dto.request.nonAuth.accountDTO.FormRequireNonAuth;
+import com.infomationsecurity.mfa.dto.response.VerificationResult;
 import com.infomationsecurity.mfa.dto.response.accountDTO.AccountDTO;
 import com.infomationsecurity.mfa.entity.Account;
 import com.infomationsecurity.mfa.service.AccountService;
@@ -46,9 +47,9 @@ public class NAMailServiceImpl implements NAMailService {
      * @return
      */
     @Override
-    public Boolean verifyEmailRequiredForgotPassword(EmailVerificationDTO emailVerificationDTO) {
+    public VerificationResult verifyEmailRequiredForgotPassword(EmailVerificationDTO emailVerificationDTO) {
         log.info("{} Verifying email verification",  LOG_PREFIX);
 
-        return mailService.verifyEmail(emailVerificationDTO).getSuccess();
+        return mailService.verifyEmail(emailVerificationDTO);
     }
 }
