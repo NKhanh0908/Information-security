@@ -40,7 +40,7 @@ public class Account implements UserDetails {
     @Column(name = "account_email", nullable = false)
     private String accountEmail;
 
-    @Column(name = "account_email_hash", nullable = false)
+    @Column(name = "account_email_hash")
     private String accountEmailHash;
 
     @Column(name = "account_is_locked")

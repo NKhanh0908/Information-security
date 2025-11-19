@@ -1,5 +1,6 @@
 package com.infomationsecurity.mfa.controller;
 
+import com.infomationsecurity.mfa.dto.request.totpDTO.TOTPVerificationDTO;
 import com.infomationsecurity.mfa.dto.request.userDTO.UserUpdateDTO;
 import com.infomationsecurity.mfa.dto.response.APIResponse;
 import com.infomationsecurity.mfa.dto.response.UserDTO;
@@ -54,6 +55,9 @@ public class UserController {
     @Operation(
         summary = "Update information user",
         description = "Update profile",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = @Content(schema = @Schema(implementation = UserUpdateDTO.class))
+            ),
         responses = {
                 @ApiResponse(
                         responseCode = "200",

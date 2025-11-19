@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -37,6 +38,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
+    @Transactional
     @Override
     public UserDTO update(UserUpdateDTO userUpdateDTO) {
         // Đây là luôn lấy User dựa theo account hiện tại trong SecurityContext, chứ không dựa vào JSON gửi đi .
@@ -68,11 +70,11 @@ public class UserServiceImpl implements UserService {
         }
         
         if (userUpdateDTO.getUserGender() != null) {
-            oldUser.setUserGender(userUpdateDTO.getUserGender());
+            oldUser.setUserGender(userUpdateDTO.getUserGender().name());
         }
         
         if (userUpdateDTO.getUserDateOfBirth() != null) {
-            oldUser.setUserDateOfBirth(userUpdateDTO.getUserDateOfBirth());
+            oldUser.setUserDateOfBirth(userUpdateDTO.getUserDateOfBirth().toString());
         }
         
         if (userUpdateDTO.getUserAddress() != null && !userUpdateDTO.getUserAddress().isBlank()) {

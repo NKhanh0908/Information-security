@@ -184,7 +184,7 @@ public class AccountServiceImpl implements AccountService {
     private User createUser(AccountCreateDTO accountCreateDTO) {
         User user = new User();
         user.setUserName(accountCreateDTO.getFullName());
-        user.setUserGender(accountCreateDTO.getGender());
+        user.setUserGender(accountCreateDTO.getGender().name());
         return user;
     }
 

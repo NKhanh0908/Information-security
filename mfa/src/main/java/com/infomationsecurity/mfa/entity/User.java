@@ -1,5 +1,6 @@
 package com.infomationsecurity.mfa.entity;
 
+import com.infomationsecurity.mfa.config.EncryptedStringConverter;
 import com.infomationsecurity.mfa.enums.Gender;
 import jakarta.persistence.*;
 import lombok.*;
@@ -23,19 +24,23 @@ public class User {
     private Integer userId;
 
     @Column(name = "user_name", nullable = false, length = 100)
+    @Convert(converter = EncryptedStringConverter.class)
     private String userName;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "user_gender")
-    private Gender userGender;
+    @Convert(converter = EncryptedStringConverter.class)
+    private String userGender;
 
     @Column(name = "user_date_of_birth")
-    private LocalDate userDateOfBirth;
+    @Convert(converter = EncryptedStringConverter.class)
+    private String userDateOfBirth;
 
     @Column(name = "user_address")
+    @Convert(converter = EncryptedStringConverter.class)
     private String userAddress;
 
     @Column(name = "user_phone", length = 20)
+    @Convert(converter = EncryptedStringConverter.class)
     private String userPhone;
 
     @Column(name = "user_created_at")

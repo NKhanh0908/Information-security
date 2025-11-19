@@ -2,6 +2,7 @@ package com.infomationsecurity.mfa.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.infomationsecurity.mfa.config.BackupCodesConverter;
+import com.infomationsecurity.mfa.config.EncryptedStringConverter;
 import com.infomationsecurity.mfa.enums.MfaMethod;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -43,6 +44,7 @@ public class MfaSettings {
     private MfaMethod mfaBackupMethod;
 
     @Column(name = "mfa_totp_secret_key")
+    @Convert(converter = EncryptedStringConverter.class)
     private String mfaTotpSecretKey;
 
     @Column(name = "mfa_totp_enable")
@@ -50,6 +52,7 @@ public class MfaSettings {
 
     @Column(name = "mfa_backup_codes")
     @Convert(converter = BackupCodesConverter.class)
+    @Convert(converter = EncryptedStringConverter.class)
     private List<String> backupCodes;
 
     @Column(name = "mfa_email_enabled")
