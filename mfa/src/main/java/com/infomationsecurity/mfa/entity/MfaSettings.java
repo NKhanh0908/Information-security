@@ -52,7 +52,6 @@ public class MfaSettings {
 
     @Column(name = "mfa_backup_codes")
     @Convert(converter = BackupCodesConverter.class)
-    @Convert(converter = EncryptedStringConverter.class)
     private List<String> backupCodes;
 
     @Column(name = "mfa_email_enabled")
