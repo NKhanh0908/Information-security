@@ -1,10 +1,13 @@
 package com.infomationsecurity.mfa.util;
 
 
+import com.infomationsecurity.mfa.util.encrypt.RSAEncryptionService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,19 +24,28 @@ import java.util.stream.Collectors;
 @Component
 public class JwtTokenUtil {
 
-    private final SecretKey secretKey;
+    private SecretKey secretKey;
 
+    @Value("${jwt.secret-key}")
+    private String jwtSecretKey;
 
     private final long accessTokenExpiration;
     private final long refreshTokenExpiration;
 
+    @Autowired
+    private RSAEncryptionService rsaService;
+
+    @PostConstruct
+    public void init() throws Exception {
+        String decryptedKey = rsaService.decryptWithPrivateKey(jwtSecretKey);
+        byte[] keyBytes = Base64.getDecoder().decode(decryptedKey.getBytes(StandardCharsets.UTF_8));
+        this.secretKey = new SecretKeySpec(keyBytes, "HmacSHA256");
+    }
+
     public JwtTokenUtil(
-            @Value("${jwt.secret-key}") String jwtSecret,
             @Value("${jwt.access-expiration:900000}") long accessTokenExpiration,
             @Value("${jwt.refresh-expiration:604800000}") long refreshTokenExpiration
     ) {
-        byte[] keyBytes = Base64.getDecoder().decode(jwtSecret.getBytes(StandardCharsets.UTF_8));
-        this.secretKey = new SecretKeySpec(keyBytes, "HmacSHA256");
         this.accessTokenExpiration = accessTokenExpiration;
         this.refreshTokenExpiration = refreshTokenExpiration;
 

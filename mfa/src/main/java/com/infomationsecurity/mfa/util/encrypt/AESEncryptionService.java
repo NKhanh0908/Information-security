@@ -24,7 +24,6 @@ public class AESEncryptionService {
     private static final String TRANSFORMATION = "AES/GCM/NoPadding";
     private static final int GCM_IV_LENGTH = 12; // 96 bits
     private static final int GCM_TAG_LENGTH = 128; // 128 bits
-    private static final int KEY_SIZE = 256; // AES-256
 
     @Value("${app.encryption.key}")
     private String secretKeyString;
@@ -52,15 +51,6 @@ public class AESEncryptionService {
         } catch (Exception ex) {
             throw new RuntimeException("Failed to initialize EncryptionService: " + ex.getMessage(), ex);
         }
-    }
-
-    /**
-     * Generate AES-256 key mới
-     */
-    public SecretKey generateKey() throws Exception {
-        KeyGenerator keyGenerator = KeyGenerator.getInstance(ALGORITHM);
-        keyGenerator.init(KEY_SIZE, new SecureRandom());
-        return keyGenerator.generateKey();
     }
 
     /**
